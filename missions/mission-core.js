@@ -526,7 +526,7 @@
         div.className = 'sbp-obj';
         div.innerHTML = obj.type === 'primary' 
           ? `<div><strong>${obj.text}</strong></div>`
-          : `<div>${obj.text}</div>`;
+          : `: `<div><strong>${obj.text}</strong></div>`;
         elObjectivesContainer.appendChild(div);
       });
     }
@@ -577,7 +577,7 @@ engine.startY = ${config.world.start.y}
 engine.startDir = "${config.world.start.dir}"
 engine.goalX = ${config.world.goal ? config.world.goal.x : 0}
 engine.goalY = ${config.world.goal ? config.world.goal.y : 0}
-engine.hasGoal = ${config.rules.reachGoal}
+engine.hasGoal = ${config.rules.reachGoal ? 'True' : 'False'}
 engine.initAsteroids = ${JSON.stringify(config.world.asteroids)}
 engine.initOpenings = ${JSON.stringify(config.world.openings)}
 engine.initFieldPow = ${JSON.stringify(config.world.powerups)}
