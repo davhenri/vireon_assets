@@ -38,7 +38,8 @@
     "stations": [
       [
         5,
-        7
+        7,
+        "blue"
       ]
     ],
     "aliens": [],
