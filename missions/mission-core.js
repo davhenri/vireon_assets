@@ -76,7 +76,7 @@
   
   const stashDropWrap = getEl('stashDropWrap');
   const stashLocked = getEl('stashLocked');
-  
+
   const layerOpenings = getEl('layerOpenings');
   const layerStations = getEl('layerStations');
   const layerAsteroids = getEl('layerAsteroids');
@@ -85,13 +85,15 @@
   const layerPowerups = getEl('layerPowerups');
   const layerLaser = getEl('layerLaser');
   const player = getEl('player');
-  
+
   let playerBaseHref = '';
   let CODE_STORAGE_KEY = '';
   let MOTION_STORAGE_KEY = '';
-  
-  // Basis-Pfad ermitteln
-  const basePath = currentScript.src.substring(0, currentScript.src.lastIndexOf('/') + 1);
+
+  // Basis-Pfad fest setzen statt dynamisch berechnen
+  // Vorteil: raw.githubusercontent.com ist schneller als jsDelivr für kleine Dateien
+  // und Änderungen sind sofort live (kein CDN-Cache-Purging nötig)
+  const basePath = 'https://raw.githubusercontent.com/davhenri/vireon_assets/main/missions/';
   
   // Utility-Funktionen
   function worldToSvgY(y) { return (gridH - 1 - y) * cell; }
