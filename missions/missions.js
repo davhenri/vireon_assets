@@ -5,14 +5,14 @@
     "officerGif": "mission_briefings/offizier_briefing_12s.gif",
     "background": "mission_briefings/bg.jpg",
     "sprites": {
-      "player": vireon/player.svg",
-      "asteroid": vireon/asteroid.png",
-      "powerup": vireon/powerup.png",
-      "station": vireon/stationBlue.png",
-      "alien": vireon/alien.png",
-      "stationBlue": vireon/stationBlue.png",
-      "stationRed": vireon/stationRed.png",
-      "ammo": vireon/ammo.png"
+      "player": "vireon/player.svg",
+      "asteroid": "vireon/asteroid.png",
+      "powerup": "vireon/powerup.png",
+      "station": "vireon/stationBlue.png",
+      "alien": "vireon/alien.png",
+      "stationBlue": "vireon/stationBlue.png",
+      "stationRed": "vireon/stationRed.png",
+      "ammo": "vireon/ammo.png"
     }
   },
   "missions": {
