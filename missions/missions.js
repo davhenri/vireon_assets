@@ -5,12 +5,12 @@
     "officerGif": "mission_briefings/offizier_briefing_12s.gif",
     "background": "mission_briefings/bg.jpg",
     "sprites": {
-      "player": "argo/player.svg",
-      "asteroid": "argo/asteroid.png",
-      "powerup": "argo/powerup.png",
-      "station": "argo/station.png",
-      "alien": "argo/alien.png",
-      "ammo": "argo/ammo.png"
+      "player": vireon/player.svg",
+      "asteroid": vireon/asteroid.png",
+      "powerup": vireon/powerup.png",
+      "station": "vireon/stationBlue.png",
+      "alien": vireon/alien.png",
+      "ammo":vireon/ammo.png"
     }
   },
   "missions": {
