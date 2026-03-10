@@ -210,7 +210,9 @@
   
   // Mission-Core laden und initialisieren
   const script = document.createElement('script');
-  const basePath = document.currentScript.src.substring(0, document.currentScript.src.lastIndexOf('/') + 1);
+  // Feste URL für raw.githubusercontent.com statt dynamische Berechnung
+  // Vorteil: Schneller als jsDelivr, keine Cache-Probleme, funktioniert zuverlässig in Moodle
+  const basePath = 'https://raw.githubusercontent.com/davhenri/vireon_assets/main/missions/';
   script.src = basePath + 'mission-core.js';
   script.setAttribute('data-mission-id', missionId);
   script.setAttribute('data-container-id', container.id);
