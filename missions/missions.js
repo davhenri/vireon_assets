@@ -8,9 +8,9 @@
       "player": vireon/player.svg",
       "asteroid": vireon/asteroid.png",
       "powerup": vireon/powerup.png",
-      "station": "vireon/stationBlue.png",
+      "station": vireon/stationBlue.png",
       "alien": vireon/alien.png",
-      "ammo":vireon/ammo.png"
+      "ammo": vireon/ammo.png"
     }
   },
   "missions": {
