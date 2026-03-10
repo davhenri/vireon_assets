@@ -313,7 +313,10 @@
     
     world.stations.forEach(function(s) {
       if (!layerStations) return;
-      layerStations.appendChild(makeImage(assetBasePath + sprites.station, s[0]*cell, worldToSvgY(s[1] + 2), cell*4, cell*3));
+      // Support station types: [x, y, type] or [x, y] (defaults to 'blue')
+      var stationType = s[2] || 'blue';
+      var stationSprite = sprites['station' + stationType.charAt(0).toUpperCase() + stationType.slice(1)];
+      layerStations.appendChild(makeImage(assetBasePath + stationSprite, s[0]*cell, worldToSvgY(s[1] + 2), cell*4, cell*3));
     });
     
     world.asteroids.forEach(function(a) {

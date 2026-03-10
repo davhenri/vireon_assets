@@ -10,6 +10,8 @@
       "powerup": vireon/powerup.png",
       "station": vireon/stationBlue.png",
       "alien": vireon/alien.png",
+      "stationBlue": "vireon/stationBlue.png",
+      "stationRed": "vireon/stationRed.png",
       "ammo": vireon/ammo.png"
     }
   },

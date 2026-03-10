@@ -17,8 +17,6 @@ class Engine:
         self.initOpenings = []
         self.initFieldPow = []
         self.initStations = []
-        self.stationDocks = set()
-        self.stationCollision = set()
         self.initAliens = []
         self.initAmmo = []
         self.initPlayerPow = 0
@@ -47,6 +45,20 @@ class Engine:
         self.lastShot = None
         self.actions = []
         self.actionIndex = 0
+
+        # Initialize station collision and dock zones
+        # Stations are 4x3 cells, positioned at [x, y] with optional type [x, y, type]
+        # Dock is on the right-middle cell (x+3, y+1)
+        self.stationDocks = set()
+        self.stationCollision = set()
+        for s in self.initStations:
+            sx, sy = s[0], s[1]  # Station base position, ignoring type if present
+            # Station occupies: x to x+3 (4 wide), y to y+2 (3 high)
+            for dx in range(4):
+                for dy in range(3):
+                    self.stationCollision.add((sx + dx, sy + dy))
+            # Dock position: right-middle of the station
+            self.stationDocks.add((sx + 3, sy + 1))
 
     def _forward(self):
         return {"N":(0,1),"E":(1,0),"S":(0,-1),"W":(-1,0)}[self.dir]
