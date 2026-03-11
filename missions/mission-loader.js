@@ -27,7 +27,6 @@
         <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; margin-top: 10px; overflow-x: auto;"><code>&lt;link rel="stylesheet" href="https://raw.githubusercontent.com/davhenri/vireon_assets/main/missions/mission.css"&gt;
 
 &lt;div id="mission-container" data-mission="m1-01"&gt;&lt;/div&gt;
-&lt;script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"&gt;&lt;/script&gt;
 &lt;script src="https://raw.githubusercontent.com/davhenri/vireon_assets/main/missions/mission-loader.js"&gt;&lt;/script&gt;</code></pre>
       </details>
       <p style="margin-top: 15px; font-size: 0.9em; color: #666;">Weitere Hilfe: Siehe <code>moodle/alternative_embeds/SCHNELLANLEITUNG.md</code></p>
@@ -207,14 +206,63 @@
   container.setAttribute('data-mission-loaded', 'true');
   
   console.log('✅ Template injiziert für', missionId);
-  
+
+  // Pyodide laden (falls nicht bereits geladen)
+  function ensurePyodideLoaded(callback) {
+    // Prüfen, ob Pyodide bereits verfügbar ist
+    if (typeof loadPyodide !== 'undefined') {
+      console.log('✅ Pyodide bereits geladen');
+      callback();
+      return;
+    }
+
+    // Prüfen, ob Pyodide-Script bereits im DOM ist
+    const existingScript = document.querySelector('script[src*="pyodide"]');
+    if (existingScript) {
+      console.log('⏳ Pyodide-Script gefunden, warte auf Laden...');
+      existingScript.addEventListener('load', callback);
+      existingScript.addEventListener('error', function() {
+        console.error('❌ Fehler beim Laden von Pyodide');
+        showError(
+          'Pyodide konnte nicht geladen werden',
+          'Das Pyodide-Script konnte nicht von der CDN geladen werden.',
+          'Überprüfe deine Internetverbindung oder versuche es später erneut.'
+        );
+      });
+      return;
+    }
+
+    // Pyodide-Script dynamisch laden
+    console.log('📦 Lade Pyodide-Script...');
+    const pyodideScript = document.createElement('script');
+    pyodideScript.src = 'https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js';
+    pyodideScript.addEventListener('load', function() {
+      console.log('✅ Pyodide-Script geladen');
+      callback();
+    });
+    pyodideScript.addEventListener('error', function() {
+      console.error('❌ Fehler beim Laden von Pyodide');
+      showError(
+        'Pyodide konnte nicht geladen werden',
+        'Das Pyodide-Script konnte nicht von der CDN geladen werden.',
+        'Überprüfe deine Internetverbindung oder versuche es später erneut.'
+      );
+    });
+    document.head.appendChild(pyodideScript);
+  }
+
   // Mission-Core laden und initialisieren
-  const script = document.createElement('script');
-  // Feste URL für raw.githubusercontent.com statt dynamische Berechnung
-  // Vorteil: Schneller als jsDelivr, keine Cache-Probleme, funktioniert zuverlässig in Moodle
-  const basePath = 'https://raw.githubusercontent.com/davhenri/vireon_assets/main/missions/';
-  script.src = basePath + 'mission-core.js';
-  script.setAttribute('data-mission-id', missionId);
-  script.setAttribute('data-container-id', container.id);
-  document.body.appendChild(script);
+  function loadMissionCore() {
+    const script = document.createElement('script');
+    // Feste URL für raw.githubusercontent.com statt dynamische Berechnung
+    // Vorteil: Schneller als jsDelivr, keine Cache-Probleme, funktioniert zuverlässig in Moodle
+    const basePath = 'https://raw.githubusercontent.com/davhenri/vireon_assets/main/missions/';
+    script.src = basePath + 'mission-core.js';
+    script.setAttribute('data-mission-id', missionId);
+    script.setAttribute('data-container-id', container.id);
+    document.body.appendChild(script);
+  }
+
+  // Pyodide sicherstellen, dann Mission-Core laden
+  ensurePyodideLoaded(loadMissionCore);
 })();

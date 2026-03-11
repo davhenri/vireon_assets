@@ -37,14 +37,19 @@ Für jede Mission wird eine Moodle-Textseite mit folgendem Code erstellt:
 <!-- Beispiel einer Moodle Textseite mit externem Mission-Loader -->
 <!-- Diese Datei zeigt, wie man den mission-loader.js verwendet, um Inhalte extern zu laden -->
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/missions/mission.css">
+<link rel="stylesheet" href="https://raw.githubusercontent.com/davhenri/vireon_assets/main/missions/mission.css">
 
 <div id="mission-container" data-mission="m1-01"></div>
-<script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/missions/mission-loader.js"></script>
+<script src="https://raw.githubusercontent.com/davhenri/vireon_assets/main/missions/mission-loader.js"></script>
 ```
 
 Das `data-mission` Attribut gibt die Mission-ID an (z.B. `m1-01`, `m2-05`, `m6-10`).
+
+**Hinweis:** Das Pyodide-Script wird automatisch von mission-loader.js geladen, muss also nicht mehr manuell eingebunden werden. Falls gewünscht, kann es aber trotzdem vorab geladen werden:
+
+```html
+<script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+```
 
 ## Quellen
 
