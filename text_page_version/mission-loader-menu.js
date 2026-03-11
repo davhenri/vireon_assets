@@ -1,4 +1,20 @@
 // mission-loader-menu.js - Template Injector with Mission Selector
+
+// Dynamischer Pfad-Bootstrap: Ermittelt zur Laufzeit den korrekten lokalen Basispfad
+// aus der Moodle-URL und contextId
+(function() {
+  var baseMatch = window.location.href.match(/^(https?:\/\/[^\/]+\/[^\/]+\/)/);
+  if (!baseMatch) return;
+  var instanceBase = baseMatch[1];
+
+  var ctxMatch = document.documentElement.innerHTML.match(/pluginfile\.php\/(\d+)\/mod_page/);
+  if (!ctxMatch) return;
+  var contextId = ctxMatch[1];
+
+  window.VIREON_ASSET_BASE = instanceBase + 'pluginfile.php/' + contextId + '/mod_page/content/0/';
+  console.log('📦 Vireon Asset Base Path:', window.VIREON_ASSET_BASE);
+})();
+
 (function() {
   const scriptEl = document.currentScript;
   let container = scriptEl ? scriptEl.previousElementSibling : null;
@@ -24,10 +40,10 @@
       <p style="margin: 10px 0; color: #333;"><strong>Lösung:</strong> ${solution}</p>
       <details style="margin-top: 15px;">
         <summary style="cursor: pointer; color: #666;">Beispiel anzeigen</summary>
-        <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; margin-top: 10px; overflow-x: auto;"><code>&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/text_page_version/mission.css"&gt;
+        <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; margin-top: 10px; overflow-x: auto;"><code>&lt;link data-rel-href="missions/mission.css" rel="stylesheet"&gt;
 
 &lt;div id="mission-container" data-default-mission="m1-01"&gt;&lt;/div&gt;
-&lt;script src="https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/text_page_version/mission-loader-menu.js"&gt;&lt;/script&gt;</code></pre>
+&lt;script data-rel-href="missions/mission-loader-menu.js"&gt;&lt;/script&gt;</code></pre>
       </details>
       <p style="margin-top: 15px; font-size: 0.9em; color: #666;">Weitere Hilfe: Siehe <code>text_page_version/README.md</code></p>
     `;
@@ -259,9 +275,9 @@
   // Mission-Core laden und initialisieren
   function loadMissionCore() {
     const script = document.createElement('script');
-    // Feste URL für jsDelivr CDN
-    const basePath = 'https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/text_page_version/';
-    script.src = basePath + 'mission-core-menu.js';
+    // Verwende lokalen Basispfad statt CDN
+    const basePath = window.VIREON_ASSET_BASE || '';
+    script.src = basePath + 'missions/mission-core-menu.js';
     script.setAttribute('data-default-mission', defaultMissionId);
     script.setAttribute('data-container-id', container.id);
     document.body.appendChild(script);

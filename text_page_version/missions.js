@@ -1,9 +1,9 @@
 {
   "version": "2.0",
   "baseAssets": {
-    "basePath": "https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/",
-    "officerGif": "mission_briefings/offizier_briefing_12s.gif",
-    "background": "mission_briefings/bg.jpg",
+    "basePath": "",
+    "officerGif": "briefings/offizier_briefing_12s.gif",
+    "background": "briefings/bg.jpg",
     "sprites": {
       "player": "vireon/player.svg",
       "asteroid": "vireon/asteroid.png",

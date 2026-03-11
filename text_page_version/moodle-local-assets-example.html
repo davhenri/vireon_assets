@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vireon Missionen - Moodle Textseite (Lokale Assets)</title>
+</head>
+<body>
+
+<!--
+===========================================
+VIREON MISSIONS - MOODLE TEXTSEITE (LOKALE ASSETS)
+===========================================
+
+Dies ist das vollständige Beispiel für eine Moodle-Textseite,
+die alle Assets lokal aus Moodle lädt (kein GitHub CDN).
+
+INSTALLATION:
+1. In Moodle eine neue "Textseite" Aktivität erstellen
+2. Folgende Dateien hochladen (als Anhänge zur Textseite):
+   - missions/mission.css
+   - missions/mission-loader-menu.js
+   - missions/mission-core-menu.js
+   - missions/missions.js
+   - missions/engine.py
+   - briefings/offizier_briefing_12s.gif
+   - briefings/bg.jpg
+   - vireon/player.svg
+   - vireon/asteroid.png
+   - vireon/powerup.png
+   - vireon/alien.png
+   - vireon/ammo.png
+   - vireon/stationBlue.png
+   - vireon/stationRed.png
+
+3. Im Text-Editor auf "HTML-Modus" umschalten (</> Button)
+4. Diesen Code (ab Zeile 49) einfügen
+5. Speichern
+
+WICHTIG:
+- Der Code muss im HTML-Modus eingefügt werden
+- Bootstrap ist in Moodle bereits vorhanden (kein externes CSS nötig)
+- Pyodide wird von CDN geladen (einzige externe Abhängigkeit)
+- Alle anderen Assets werden lokal aus Moodle geladen
+-->
+
+<!-- Bootstrap-Script: Konvertiert data-rel-href zu echten Pfaden -->
+<script>
+(function() {
+  var m = window.location.href.match(/^(https?:\/\/[^\/]+\/[^\/]+\/)/);
+  if (!m) return;
+  var base = m[1];
+
+  function apply() {
+    var ctxMatch = document.documentElement.innerHTML.match(/pluginfile\.php\/(\d+)\/mod_page/);
+    if (!ctxMatch) return;
+    var assetBase = base + 'pluginfile.php/' + ctxMatch[1] + '/mod_page/content/0/';
+    document.querySelectorAll('[data-rel-href]').forEach(function(el) {
+      var rel = el.getAttribute('data-rel-href').replace(/^\/+/, '');
+      var full = assetBase + rel;
+      el.tagName === 'LINK' ? el.setAttribute('href', full) : el.setAttribute('src', full);
+    });
+  }
+
+  document.readyState === 'loading'
+    ? document.addEventListener('DOMContentLoaded', apply)
+    : apply();
+})();
+</script>
+
+<!-- Mission CSS (lokal aus Moodle) -->
+<link data-rel-href="missions/mission.css" rel="stylesheet">
+
+<div class="container my-4">
+    <div class="alert alert-info" role="alert">
+        <h4 class="alert-heading">🚀 Willkommen beim Vireon Missions-System!</h4>
+        <p>
+            Du bist Pilot der Raumstation Vireon. Deine Aufgabe: Navigiere dein Schiff durch den Weltraum,
+            weiche Asteroiden aus, sammle Energie-Kristalle und erreiche deine Ziele.
+        </p>
+        <hr>
+        <p class="mb-0">
+            <strong>Hinweis:</strong> Wähle eine Mission aus dem Dropdown-Menü unten.
+            Dein Code wird automatisch gespeichert, sodass du jederzeit weitermachen kannst.
+        </p>
+    </div>
+
+    <!-- Mission Container mit Standard-Mission m1-01 -->
+    <div id="mission-container" data-default-mission="m1-01"></div>
+
+    <!-- Pyodide von CDN (einzige externe Abhängigkeit) -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+
+    <!-- Mission-Loader Script (lokal aus Moodle) -->
+    <script data-rel-href="missions/mission-loader-menu.js"></script>
+
+    <!-- Zusätzliche Hilfe/Tipps -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <strong>💡 Tipps & Tricks</strong>
+        </div>
+        <div class="card-body">
+            <ul>
+                <li><strong>Run:</strong> Führt deinen gesamten Code aus</li>
+                <li><strong>Step:</strong> Führt nur einen Schritt aus (hilfreich zum Debuggen)</li>
+                <li><strong>Continue:</strong> Führt Schritte automatisch nacheinander aus</li>
+                <li><strong>Reset:</strong> Setzt die Mission zurück</li>
+                <li><strong>Speed:</strong> Wähle die Ausführungsgeschwindigkeit</li>
+                <li><strong>Motion:</strong> Schalte Animationen an/aus</li>
+            </ul>
+            <p class="mb-0">
+                <strong>Hinweis:</strong> Dein Code wird automatisch gespeichert.
+                Du kannst die Seite jederzeit verlassen und später weitermachen.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!--
+===========================================
+ANPASSUNGEN
+===========================================
+
+Standard-Mission ändern:
+- Ändere data-default-mission="m1-01" zu einer anderen Mission
+- Beispiel: data-default-mission="m2-05" startet mit Mission 2.05
+
+Verfügbare Missionen:
+- Level 1: m1-01 bis m1-10 (Grundlagen)
+- Level 2: m2-01 bis m2-10 (Schleifen)
+- Level 3: m3-01 bis m3-10 (Funktionen)
+- Level 4: m4-01 bis m4-10 (Bedingungen)
+- Level 5: m5-01 bis m5-10 (Fortgeschritten)
+- Level 6: m6-01 bis m6-10 (Expert)
+
+Ordnerstruktur beim Upload:
+missions/
+  mission.css
+  mission-loader-menu.js
+  mission-core-menu.js
+  missions.js
+  engine.py
+
+briefings/
+  offizier_briefing_12s.gif
+  bg.jpg
+
+vireon/
+  player.svg
+  asteroid.png
+  powerup.png
+  alien.png
+  ammo.png
+  stationBlue.png
+  stationRed.png
+
+===========================================
+FEHLERBEHEBUNG
+===========================================
+
+Problem: Nichts wird angezeigt
+Lösung:
+- Prüfe, ob alle Dateien hochgeladen wurden
+- Prüfe, ob der Code im HTML-Modus eingefügt wurde
+- Öffne Browser-Konsole (F12) und suche nach Fehlern
+- Stelle sicher, dass die Ordnerstruktur korrekt ist
+
+Problem: "System lädt..." bleibt stehen
+Lösung:
+- Warte 10-20 Sekunden (Pyodide wird geladen)
+- Bei langsamer Verbindung kann es länger dauern
+- Lade die Seite neu, falls es länger als 1 Minute dauert
+
+Problem: Mission-Selector zeigt keine Missionen
+Lösung:
+- Öffne Browser-Konsole (F12)
+- Prüfe, ob missions.js erfolgreich geladen wurde
+- Stelle sicher, dass missions/missions.js hochgeladen wurde
+
+Problem: Bilder werden nicht angezeigt
+Lösung:
+- Prüfe, ob alle Bilddateien im vireon/ und briefings/ Ordner hochgeladen wurden
+- Achte auf korrekte Dateinamen (Groß-/Kleinschreibung)
+
+Problem: Nach Kurs-Export/Import funktioniert es nicht
+Lösung:
+- Das sollte NICHT passieren - die Pfade werden dynamisch ermittelt
+- Falls doch: Prüfe, ob alle Dateien mit exportiert wurden
+- Keine manuelle Anpassung sollte nötig sein
+
+Support:
+- Siehe README.md im text_page_version Verzeichnis
+
+===========================================
+-->
+
+</body>
+</html>

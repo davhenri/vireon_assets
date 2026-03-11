@@ -82,7 +82,8 @@
   let CODE_STORAGE_KEY = '';
   let MOTION_STORAGE_KEY = '';
 
-  const basePath = 'https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/text_page_version/';
+  // Verwende lokalen Basispfad statt CDN
+  const basePath = window.VIREON_ASSET_BASE || '';
 
   // Utility-Funktionen
   function worldToSvgY(y) { return (gridH - 1 - y) * cell; }
@@ -471,11 +472,15 @@
 
   // Missions laden
   async function loadAllMissions() {
-    const missionsUrl = basePath + 'missions.js';
+    const missionsUrl = basePath + 'missions/missions.js';
     try {
       const response = await fetch(missionsUrl);
       if (!response.ok) throw new Error(`missions.js nicht gefunden (${response.status}) – URL: ${missionsUrl}`);
       allMissionsData = await response.json();
+      // Injiziere lokalen Basispfad in die geladenen Missions-Daten
+      if (allMissionsData.baseAssets && window.VIREON_ASSET_BASE) {
+        allMissionsData.baseAssets.basePath = window.VIREON_ASSET_BASE;
+      }
       console.log('✅ Missions-Daten geladen:', Object.keys(allMissionsData.missions).length, 'Missionen');
     } catch (err) {
       console.error('❌ Fehler beim Laden der Missions-Daten:', err);
@@ -556,7 +561,7 @@
       pyodide = await loadPyodide();
 
       // Engine-Code laden
-      const engineResponse = await fetch(basePath + 'engine.py');
+      const engineResponse = await fetch(basePath + 'missions/engine.py');
       const engineCode = await engineResponse.text();
 
       // Mission-spezifische Konfiguration
