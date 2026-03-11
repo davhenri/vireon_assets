@@ -63,6 +63,8 @@ Das `data-mission` Attribut gibt die Mission-ID an (z.B. `m1-01`, `m2-05`, `m6-1
 
 Alle 60 Missionen auf einer einzigen Moodle-Textseite mit Mission-Selector (Dropdown-Menü):
 
+#### Variante A: Mit CDN (schneller Setup, externe Abhängigkeiten)
+
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/text_page_version/mission.css">
 
@@ -70,13 +72,57 @@ Alle 60 Missionen auf einer einzigen Moodle-Textseite mit Mission-Selector (Drop
 <script src="https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/text_page_version/mission-loader-menu.js"></script>
 ```
 
-**Vorteile**:
+#### Variante B: Lokale Assets 🔥 EMPFOHLEN (Produktionsumgebung)
+
+**Alle Assets lokal aus Moodle laden** (keine externen CDNs außer Pyodide):
+
+```html
+<!-- Bootstrap-Script für dynamische Pfade -->
+<script>
+(function() {
+  var m = window.location.href.match(/^(https?:\/\/[^\/]+\/[^\/]+\/)/);
+  if (!m) return;
+  var base = m[1];
+  function apply() {
+    var ctxMatch = document.documentElement.innerHTML.match(/pluginfile\.php\/(\d+)\/mod_page/);
+    if (!ctxMatch) return;
+    var assetBase = base + 'pluginfile.php/' + ctxMatch[1] + '/mod_page/content/0/';
+    document.querySelectorAll('[data-rel-href]').forEach(function(el) {
+      var rel = el.getAttribute('data-rel-href').replace(/^\/+/, '');
+      var full = assetBase + rel;
+      el.tagName === 'LINK' ? el.setAttribute('href', full) : el.setAttribute('src', full);
+    });
+  }
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', apply) : apply();
+})();
+</script>
+
+<link data-rel-href="missions/mission.css" rel="stylesheet">
+<div id="mission-container" data-default-mission="m1-01"></div>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+<script data-rel-href="missions/mission-loader-menu.js"></script>
+```
+
+**Vorteile Variante B (Lokale Assets):**
+- ✅ Keine GitHub/jsDelivr CDN-Abhängigkeit (nur Pyodide)
+- ✅ Schnellere Ladezeiten (Assets vom gleichen Server)
+- ✅ Keine Firewall-Probleme
+- ✅ Export/Import-freundlich (keine hardcodierte contextId)
+- ✅ Offline-fähig nach erstem Laden
+
+**Dateien für Variante B hochladen:**
+- Siehe `MOODLE_LOCAL_ASSETS_README.md` für vollständige Anleitung
+- Vollständiges Beispiel: `text_page_version/moodle-local-assets-example.html`
+
+**Vorteile (beide Varianten)**:
 - ✅ Nur eine einzige Textseite statt 60
 - ✅ Dropdown-Menü zum Wechseln zwischen Missionen
 - ✅ Nahtloser Wechsel ohne Seiten-Neuladung
 - ✅ Standard-Mission: m1-01 (konfigurierbar)
 
-**Mehr Informationen**: Siehe `TEXT_PAGE_VERSION_GUIDE.md` und `text_page_version/README.md`
+**Mehr Informationen**:
+- Text Page Version: `TEXT_PAGE_VERSION_GUIDE.md` und `text_page_version/README.md`
+- Lokale Assets: `MOODLE_LOCAL_ASSETS_README.md` und `text_page_version/MOODLE_LOCAL_ASSETS_GUIDE.md`
 
 **Hinweis:** Das Pyodide-Script wird automatisch von mission-loader.js geladen, muss also nicht mehr manuell eingebunden werden. Falls gewünscht, kann es aber trotzdem vorab geladen werden:
 
