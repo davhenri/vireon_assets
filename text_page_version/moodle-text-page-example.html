@@ -1,0 +1,137 @@
+<!--
+===========================================
+VIREON MISSIONS - MOODLE TEXTSEITE
+===========================================
+
+Dies ist ein vollständiges Beispiel für eine Moodle-Textseite
+mit dem Vireon Missions-System und Mission-Selector.
+
+INSTALLATION:
+1. In Moodle eine neue "Textseite" Aktivität erstellen
+2. Im Text-Editor auf "HTML-Modus" umschalten (</> Button)
+3. Diesen gesamten Code einfügen
+4. Speichern
+
+WICHTIG:
+- Der Code muss im HTML-Modus eingefügt werden
+- Bootstrap wird automatisch geladen (falls nicht in Moodle vorhanden)
+- Alle Assets werden von GitHub CDN geladen
+-->
+
+<!-- Optional: Bootstrap für besseres Layout -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Mission CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/text_page_version/mission.css">
+
+<!-- Container mit Einführungstext -->
+<div class="container my-4">
+    <div class="alert alert-info" role="alert">
+        <h4 class="alert-heading">🚀 Willkommen beim Vireon Missions-System!</h4>
+        <p>
+            Du bist Pilot der Raumstation Vireon. Deine Aufgabe: Navigiere dein Schiff durch den Weltraum,
+            weiche Asteroiden aus, sammle Energie-Kristalle und erreiche deine Ziele.
+        </p>
+        <hr>
+        <p class="mb-0">
+            <strong>Hinweis:</strong> Wähle eine Mission aus dem Dropdown-Menü unten.
+            Dein Code wird automatisch gespeichert, sodass du jederzeit weitermachen kannst.
+        </p>
+    </div>
+
+    <!--
+    Hier beginnt das eigentliche Missions-System
+    data-default-mission="m1-01" legt fest, welche Mission beim Laden angezeigt wird
+    Mögliche Werte: m1-01 bis m6-10 (insgesamt 60 Missionen)
+    -->
+    <div id="mission-container" data-default-mission="m1-01"></div>
+
+    <!-- Mission-Loader Script - Lädt alle erforderlichen Komponenten -->
+    <script src="https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/text_page_version/mission-loader-menu.js"></script>
+
+    <!-- Zusätzliche Hilfe/Tipps (optional) -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <strong>💡 Tipps & Tricks</strong>
+        </div>
+        <div class="card-body">
+            <ul>
+                <li><strong>Run:</strong> Führt deinen gesamten Code aus</li>
+                <li><strong>Step:</strong> Führt nur einen Schritt aus (hilfreich zum Debuggen)</li>
+                <li><strong>Continue:</strong> Führt Schritte automatisch nacheinander aus</li>
+                <li><strong>Reset:</strong> Setzt die Mission zurück</li>
+                <li><strong>Speed:</strong> Wähle die Ausführungsgeschwindigkeit</li>
+                <li><strong>Motion:</strong> Schalte Animationen an/aus</li>
+            </ul>
+            <p class="mb-0">
+                <strong>Hinweis:</strong> Dein Code wird automatisch gespeichert.
+                Du kannst die Seite jederzeit verlassen und später weitermachen.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!--
+===========================================
+ANPASSUNGEN
+===========================================
+
+Standard-Mission ändern:
+- Ändere data-default-mission="m1-01" zu einer anderen Mission
+- Beispiel: data-default-mission="m2-05" startet mit Mission 2.05
+
+Verfügbare Missionen:
+- Level 1: m1-01 bis m1-10 (Grundlagen)
+- Level 2: m2-01 bis m2-10 (Schleifen)
+- Level 3: m3-01 bis m3-10 (Funktionen)
+- Level 4: m4-01 bis m4-10 (Bedingungen)
+- Level 5: m5-01 bis m5-10 (Fortgeschritten)
+- Level 6: m6-01 bis m6-10 (Expert)
+
+Hilfetext anpassen:
+- Bearbeite die Texte in den <div class="alert"> und <div class="card"> Bereichen
+- HTML-Formatierungen sind möglich (<strong>, <em>, <ul>, etc.)
+
+Einführungstext entfernen:
+- Lösche den gesamten <div class="alert"> Block (Zeilen 27-39)
+
+Tipps-Bereich entfernen:
+- Lösche den gesamten <div class="card mt-4"> Block (Zeilen 53-73)
+
+Bootstrap deaktivieren:
+- Entferne die <link> Zeile mit bootstrap@5.3.0 (Zeile 23)
+- Nur wenn Bootstrap bereits in Moodle vorhanden ist
+
+===========================================
+FEHLERBEHEBUNG
+===========================================
+
+Problem: Nichts wird angezeigt
+Lösung:
+- Prüfe, ob der Code im HTML-Modus eingefügt wurde
+- Öffne Browser-Konsole (F12) und suche nach Fehlern
+- Stelle sicher, dass GitHub CDN erreichbar ist
+
+Problem: "System lädt..." bleibt stehen
+Lösung:
+- Warte 10-20 Sekunden (Pyodide wird geladen)
+- Bei langsamer Verbindung kann es länger dauern
+- Lade die Seite neu, falls es länger als 1 Minute dauert
+
+Problem: Mission-Selector zeigt keine Missionen
+Lösung:
+- Öffne Browser-Konsole (F12)
+- Prüfe, ob missions.js erfolgreich geladen wurde
+- URL: https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/text_page_version/missions.js
+
+Problem: Code wird nicht gespeichert
+Lösung:
+- Stelle sicher, dass Browser-Cookies/LocalStorage aktiviert sind
+- Private-/Inkognito-Modus kann LocalStorage deaktivieren
+
+Support:
+- Siehe README.md im text_page_version Verzeichnis
+- GitHub: https://github.com/davhenri/vireon_assets
+
+===========================================
+-->
