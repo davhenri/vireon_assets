@@ -24,10 +24,10 @@
       <p style="margin: 10px 0; color: #333;"><strong>Lösung:</strong> ${solution}</p>
       <details style="margin-top: 15px;">
         <summary style="cursor: pointer; color: #666;">Beispiel anzeigen</summary>
-        <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; margin-top: 10px; overflow-x: auto;"><code>&lt;link rel="stylesheet" href="https://raw.githubusercontent.com/davhenri/vireon_assets/main/missions/mission.css"&gt;
+        <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; margin-top: 10px; overflow-x: auto;"><code>&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/missions/mission.css"&gt;
 
 &lt;div id="mission-container" data-mission="m1-01"&gt;&lt;/div&gt;
-&lt;script src="https://raw.githubusercontent.com/davhenri/vireon_assets/main/missions/mission-loader.js"&gt;&lt;/script&gt;</code></pre>
+&lt;script src="https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/missions/mission-loader.js"&gt;&lt;/script&gt;</code></pre>
       </details>
       <p style="margin-top: 15px; font-size: 0.9em; color: #666;">Weitere Hilfe: Siehe <code>moodle/alternative_embeds/SCHNELLANLEITUNG.md</code></p>
     `;
@@ -256,7 +256,7 @@
     const script = document.createElement('script');
     // Feste URL für raw.githubusercontent.com statt dynamische Berechnung
     // Vorteil: Schneller als jsDelivr, keine Cache-Probleme, funktioniert zuverlässig in Moodle
-    const basePath = 'https://raw.githubusercontent.com/davhenri/vireon_assets/main/missions/';
+    const basePath = 'https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/missions/';
     script.src = basePath + 'mission-core.js';
     script.setAttribute('data-mission-id', missionId);
     script.setAttribute('data-container-id', container.id);
