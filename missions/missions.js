@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "baseAssets": {
-    "basePath": "https://raw.githubusercontent.com/davhenri/vireon_assets/main/",
+    "basePath": "https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/",
     "officerGif": "mission_briefings/offizier_briefing_12s.gif",
     "background": "mission_briefings/bg.jpg",
     "sprites": {

@@ -91,9 +91,9 @@
   let MOTION_STORAGE_KEY = '';
 
   // Basis-Pfad fest setzen statt dynamisch berechnen
-  // Vorteil: raw.githubusercontent.com ist schneller als jsDelivr für kleine Dateien
-  // und Änderungen sind sofort live (kein CDN-Cache-Purging nötig)
-  const basePath = 'https://raw.githubusercontent.com/davhenri/vireon_assets/main/missions/';
+  // Vorteil: jsDelivr CDN ist stabiler und zuverlässiger als raw.githubusercontent.com,
+  // besonders in Moodle-Umgebungen mit Firewalls und Content-Type-Problemen
+  const basePath = 'https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/missions/';
   
   // Utility-Funktionen
   function worldToSvgY(y) { return (gridH - 1 - y) * cell; }
