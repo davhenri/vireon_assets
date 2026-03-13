@@ -3,10 +3,17 @@
   const missionId = window.VIREON_MISSION_ID; // einzige Info von der Moodle-Seite
 
   // 1. Mission-Config und Engine parallel laden
-  const [missionData, enginePy] = await Promise.all([
-    fetch(BASE + 'missions/' + missionId + '.json').then(r => r.json()),
-    fetch(BASE + 'missions/engine.py').then(r => r.text())
-  ]);
+  // Try loading from missions/data/ first (Version 2.0), fallback to missions/ (simple schema)
+  let missionData;
+  try {
+    // First try missions/data/ with .js extension (Version 2.0)
+    missionData = await fetch(BASE + 'missions/data/' + missionId + '.js').then(r => r.json());
+  } catch (e) {
+    // Fallback to missions/ with .json extension (simple schema)
+    missionData = await fetch(BASE + 'missions/' + missionId + '.json').then(r => r.json());
+  }
+
+  const enginePy = await fetch(BASE + 'missions/engine.py').then(r => r.text());
 
   // 2. Runtime starten (vireon-runtime.js nutzt missionData + enginePy)
   window.VIREON_MISSION = missionData;

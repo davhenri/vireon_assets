@@ -8,6 +8,25 @@
     return;
   }
 
+  // ===== NORMALIZE MISSION DATA (Support Version 2.0 and simple schema) =====
+  // Extract briefing text (Version 2.0 has briefing.text, simple schema has briefing string)
+  const briefingText = typeof mission.briefing === 'object'
+    ? (mission.briefing.text || '')
+    : (mission.briefing || '');
+
+  // Extract objectives text (Version 2.0 has objectives[] array, simple schema has objectives_text string)
+  const objectivesText = mission.objectives_text
+    || (mission.objectives && mission.objectives.length > 0
+        ? mission.objectives.map(obj => obj.text).join(' ')
+        : 'Mission laden...');
+
+  // Extract allowed commands (Version 2.0 has allowedCommands, simple schema has allowed_commands)
+  const allowedCommands = mission.allowedCommands || mission.allowed_commands || [];
+
+  // Extract reward data (Version 2.0 has stashSecret/stashText, simple schema has secret/text)
+  const rewardSecret = mission.reward?.stashSecret || mission.reward?.secret || 'qR9sT0';
+  const rewardText = mission.reward?.stashText || mission.reward?.text || 'Pick up!';
+
   // ===== IMAGE URLS =====
   const IMG = {
     player: BASE + 'vireon/player.svg',
@@ -32,7 +51,7 @@
       <div>
         <div class="sbp-chip">MISSION FILE • ${mission.id || '1.06'}</div>
       </div>
-      <div class="sbp-chip">COMMANDS: ${(mission.allowed_commands || []).map(c => '<code style="color:var(--sbp-text);">' + c + '()</code>').join(' ')}</div>
+      <div class="sbp-chip">COMMANDS: ${allowedCommands.map(c => '<code style="color:var(--sbp-text);">' + c + '()</code>').join(' ')}</div>
     </div>
 
     <div class="sbp-briefing">
@@ -47,10 +66,10 @@
 
     <div class="sbp-objectives">
       <div class="sbp-obj">
-        <div><strong>${mission.objectives_text || 'Mission laden...'}</strong></div>
+        <div><strong>${objectivesText}</strong></div>
       </div>
       <div class="sbp-obj">
-        <div><strong>Befehle: ${(mission.allowed_commands || []).join(', ')}</strong></div>
+        <div><strong>Befehle: ${allowedCommands.join(', ')}</strong></div>
       </div>
     </div>
   </div>
@@ -114,7 +133,7 @@
                 <div style="margin-top:6px; color:var(--sbp-muted);">Freigeschaltet, sobald die Mission erfüllt ist.</div>
 
                 <div id="stashDropWrap" style="display:none; margin-top:10px;">
-                  [stashdrop secret="${mission.reward?.secret || 'qR9sT0'}" text="${mission.reward?.text || 'Pick up!'}" image]
+                  [stashdrop secret="${rewardSecret}" text="${rewardText}" image]
                 </div>
 
                 <div id="stashLocked" style="margin-top:10px; font-weight:900;">
@@ -192,7 +211,7 @@
   const elPyStatus = document.getElementById('pyStatus');
   const elSimStatus = document.getElementById('simStatus');
   const elTickLabel = document.getElementById('tickLabel');
-  const briefingNarrative = mission.briefing || '';
+  const briefingNarrative = briefingText;
 
   const btnReset = document.getElementById('btnReset');
   const btnRun = document.getElementById('btnRun');

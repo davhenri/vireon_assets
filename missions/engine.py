@@ -47,39 +47,105 @@ class Engine:
         self.reset()
 
     def _configure_from_dict(self, config):
-        """Configure engine from mission dictionary."""
+        """Configure engine from mission dictionary.
+
+        Supports both Version 2.0 schema (missions/data/*.js) and simple schema (missions/*.json).
+        """
         global MISSION_ID
         MISSION_ID = config.get('id', 'unknown')
 
-        # Start position
-        start = config.get('start', {"x": 7, "y": 2, "dir": "N"})
-        self.startX = start.get('x', 7)
-        self.startY = start.get('y', 2)
-        self.startDir = start.get('dir', 'N')
+        # Check if this is Version 2.0 format (has 'world' key)
+        if 'world' in config:
+            # Version 2.0 schema
+            world = config['world']
+            player = config.get('player', {})
 
-        # Goal position
-        goal = config.get('goal')
-        if goal:
-            self.goalX = goal.get('x', -1)
-            self.goalY = goal.get('y', -1)
-            self.hasGoal = True
+            # Start position
+            start = world.get('start', {"x": 7, "y": 2, "dir": "N"})
+            self.startX = start.get('x', 7)
+            self.startY = start.get('y', 2)
+            self.startDir = start.get('dir', 'N')
+
+            # Goal position
+            goal = world.get('goal')
+            if goal:
+                self.goalX = goal.get('x', -1)
+                self.goalY = goal.get('y', -1)
+                self.hasGoal = True
+            else:
+                self.goalX = self.goalY = -1
+                self.hasGoal = False
+
+            # World elements
+            self.initAsteroids = world.get('asteroids', [])
+            self.initOpenings = world.get('openings', [])
+            self.initFieldPow = world.get('powerups', [])
+            self.initStations = world.get('stations', [])
+            self.initAliens = world.get('aliens', [])
+            self.initAmmo = world.get('ammo', [])
+
+            # Player starting inventory
+            self.initPlayerPow = player.get('startPowerups', 0)
+            self.initPlayerAmmo = player.get('startAmmo', 0)
+
+            # Alien patrols
+            self.initPatrols = world.get('alienPatrols', [])
+
+            # Rules - Version 2.0 uses different key names
+            rules = config.get('rules', {})
+            self.closeN = rules.get('closeOpenings', 0)
+            self.destroyN = rules.get('destroyAliens', 0)
+            self.collectN = rules.get('collectPowerups', 0)
+            self.deliverN = rules.get('deliverPowerups', 0)
+
+            # Check reachGoal rule
+            if not self.hasGoal and rules.get('reachGoal'):
+                # If reachGoal is true but no goal is defined, that's an error
+                # But let's be lenient and just set hasGoal
+                self.hasGoal = True
+
         else:
-            self.goalX = self.goalY = -1
-            self.hasGoal = False
+            # Simple schema (original format)
+            # Start position
+            start = config.get('start', {"x": 7, "y": 2, "dir": "N"})
+            self.startX = start.get('x', 7)
+            self.startY = start.get('y', 2)
+            self.startDir = start.get('dir', 'N')
 
-        # World elements
-        self.initAsteroids = config.get('asteroids', [])
-        self.initOpenings = config.get('openings', [])
-        self.initFieldPow = config.get('field_powerups', [])
-        self.initStations = config.get('stations', [])
-        self.initAliens = config.get('aliens', [])
-        self.initAmmo = config.get('ammo', [])
+            # Goal position
+            goal = config.get('goal')
+            if goal:
+                self.goalX = goal.get('x', -1)
+                self.goalY = goal.get('y', -1)
+                self.hasGoal = True
+            else:
+                self.goalX = self.goalY = -1
+                self.hasGoal = False
 
-        # Player starting inventory
-        self.initPlayerPow = config.get('start_powerups', 0)
-        self.initPlayerAmmo = config.get('start_ammo', 0)
+            # World elements
+            self.initAsteroids = config.get('asteroids', [])
+            self.initOpenings = config.get('openings', [])
+            self.initFieldPow = config.get('field_powerups', [])
+            self.initStations = config.get('stations', [])
+            self.initAliens = config.get('aliens', [])
+            self.initAmmo = config.get('ammo', [])
 
-        # Station docks and collision zones
+            # Player starting inventory
+            self.initPlayerPow = config.get('start_powerups', 0)
+            self.initPlayerAmmo = config.get('start_ammo', 0)
+
+            # Rules
+            rules = config.get('rules', {})
+            self.closeN = rules.get('close_openings', 0)
+            self.destroyN = rules.get('destroy_aliens', 0)
+            self.collectN = rules.get('collect_powerups', 0)
+            self.deliverN = rules.get('deliver_powerups', 0)
+
+            # Alien patrols
+            self.initPatrols = config.get('alien_patrols', [])
+
+        # Station docks and collision zones (same for both schemas)
+        # Try to get from config first (simple schema may have these)
         self.stationDocks = set(tuple(d) for d in config.get('station_docks', []))
         self.stationCollision = set(tuple(c) for c in config.get('station_collision', []))
 
@@ -100,16 +166,6 @@ class Engine:
                 sx, sy = s[0], s[1]
                 # Dock position: right-middle of the station (x+3, y+1)
                 self.stationDocks.add((sx + 3, sy + 1))
-
-        # Rules
-        rules = config.get('rules', {})
-        self.closeN = rules.get('close_openings', 0)
-        self.destroyN = rules.get('destroy_aliens', 0)
-        self.collectN = rules.get('collect_powerups', 0)
-        self.deliverN = rules.get('deliver_powerups', 0)
-
-        # Alien patrols
-        self.initPatrols = config.get('alien_patrols', [])
 
     def reset(self):
         self.tick = 0
@@ -409,13 +465,19 @@ def configure_engine(mission_config):
     """Configure the global engine with mission data from JSON.
 
     Args:
-        mission_config: Dictionary containing mission configuration with 'engine' key.
-                       Should match the structure from mission JSON files.
+        mission_config: Dictionary containing mission configuration.
+                       Supports both Version 2.0 schema (with 'world' key) and
+                       simple schema (with 'engine' key).
     """
     global engine
-    # Extract the engine configuration from the mission data
-    engine_config = mission_config.get('engine', {})
-    engine = Engine(engine_config)
+    # Check if this is Version 2.0 format (has 'world' key)
+    if 'world' in mission_config:
+        # Version 2.0 schema - pass the entire mission config
+        engine = Engine(mission_config)
+    else:
+        # Simple schema - extract the engine configuration
+        engine_config = mission_config.get('engine', {})
+        engine = Engine(engine_config)
 
 def move(): engine.move()
 def turnLeft(): engine.turnLeft()
