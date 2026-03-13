@@ -1,0 +1,34 @@
+{
+  "id": "m1-01",
+  "title": "Mission 1.01 – Erste Schritte",
+  "briefing": "Willkommen, Pilot! Dies ist deine erste Mission. Navigiere dein Raumschiff zum grünen Zielpunkt. Benutze move() um vorwärts zu fliegen, turnLeft() um nach links zu drehen und turnRight() um nach rechts zu drehen.",
+  "objectives_text": "Erreiche das Zielfeld.",
+  "allowed_commands": [
+    "move",
+    "turnLeft",
+    "turnRight"
+  ],
+  "engine": {
+    "start": { "x": 7, "y": 2, "dir": "N" },
+    "goal": { "x": 7, "y": 12 },
+    "openings": [],
+    "stations": [],
+    "station_docks": [],
+    "station_collision": [],
+    "station_urls": [],
+    "asteroids": [],
+    "aliens": [],
+    "ammo": [],
+    "field_powerups": [],
+    "start_powerups": 0,
+    "start_ammo": 0,
+    "rules": {
+      "reach_goal": true
+    }
+  },
+  "reward": {
+    "type": "stashdrop",
+    "secret": "abc123",
+    "text": "Mission Complete!"
+  }
+}
