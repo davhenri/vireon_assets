@@ -1,0 +1,46 @@
+{
+  "id": "m1-06",
+  "title": "Mission 1.06 – Andockmanöver",
+  "briefing": "Pilot! Vor dir liegt eine Raumstation. Fliege zum Dock (rechtes mittleres Feld der Station) und lade mit loadPow() ein PowerUp. Stationen haben unendlich viele PowerUps! Dann lege es auf dem markierten Feld ab.",
+  "objectives_text": "1 Öffnung(en) mit putPow() schließen.",
+  "allowed_commands": [
+    "move",
+    "turnLeft",
+    "turnRight",
+    "putPow",
+    "removePow",
+    "loadPow"
+  ],
+  "engine": {
+    "start": { "x": 2, "y": 7, "dir": "E" },
+    "openings": [[10, 7]],
+    "stations": [[5, 7]],
+    "station_docks": [[8, 8]],
+    "station_collision": [
+      [5, 7],
+      [5, 8],
+      [5, 9],
+      [6, 7],
+      [6, 8],
+      [6, 9],
+      [7, 7],
+      [7, 8],
+      [7, 9]
+    ],
+    "station_urls": ["vireon/stationBlue.png"],
+    "asteroids": [],
+    "aliens": [],
+    "ammo": [],
+    "field_powerups": [],
+    "start_powerups": 0,
+    "start_ammo": 0,
+    "rules": {
+      "close_openings": 1
+    }
+  },
+  "reward": {
+    "type": "stashdrop",
+    "secret": "qR9sT0",
+    "text": "Pick up!"
+  }
+}
