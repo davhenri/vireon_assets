@@ -589,13 +589,27 @@ engine.initFieldPow = ${JSON.stringify(config.world.powerups)}
 engine.initStations = ${JSON.stringify(config.world.stations)}
 engine.initAliens = ${JSON.stringify(config.world.aliens)}
 engine.initAmmo = ${JSON.stringify(config.world.ammo)}
-engine.alien_patrols = ${JSON.stringify(config.world.alienPatrols || [])}
+engine.initPatrols = ${JSON.stringify(config.world.alienPatrols || [])}
 engine.initPlayerPow = ${config.player.startPowerups}
 engine.initPlayerAmmo = ${config.player.startAmmo}
 engine.closeN = ${config.rules.closeOpenings}
 engine.destroyN = ${config.rules.destroyAliens}
 engine.collectN = ${config.rules.collectPowerups}
 engine.deliverN = ${config.rules.deliverPowerups}
+
+# Compute station docks and collision zones
+engine.stationDocks = set()
+engine.stationCollision = set()
+if engine.initStations:
+    for s in engine.initStations:
+        sx, sy = s[0], s[1]
+        # Station occupies: x to x+3 (4 wide), y to y+2 (3 high)
+        for dx in range(4):
+            for dy in range(3):
+                engine.stationCollision.add((sx + dx, sy + dy))
+        # Dock position: right-middle of the station (x+3, y+1)
+        engine.stationDocks.add((sx + 3, sy + 1))
+
 engine.reset()
 
 MISSION_ID = "${missionId}"
