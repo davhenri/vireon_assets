@@ -491,42 +491,7 @@
       console.log('✅ Missions-Daten geladen:', Object.keys(allMissionsData.missions).length, 'Missionen');
     } catch (err) {
       console.error('❌ Fehler beim Laden der Missions-Daten:', err);
-
-      // Verbesserte Fehlermeldung für CORS/Network-Fehler
-      let userMessage = 'Fehler: missions.js laden fehlgeschlagen';
-      if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
-        console.error('💡 Hinweis: Dieser Fehler tritt häufig auf, wenn die HTML-Datei direkt vom Dateisystem (file://) geöffnet wird.');
-        console.error('   Lösungsansätze:');
-        console.error('   1. Öffne die Datei über einen Webserver (z.B. mit Live Server in VS Code)');
-        console.error('   2. Nutze die CDN-Version direkt: https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/moodle_textfile_m1-01.html');
-        console.error('   3. Lade die Dateien in Moodle oder ein anderes LMS hoch');
-        userMessage = 'CORS-Fehler: Bitte über Webserver öffnen';
-      }
-
-      if (elPyStatus) elPyStatus.textContent = userMessage;
-
-      // Zeige eine benutzerfreundliche Fehlermeldung im UI
-      if (wrap) {
-        const errorDiv = document.createElement('div');
-        errorDiv.style.cssText = 'border: 3px solid #ff4444; background: #fff3cd; padding: 20px; margin: 20px; border-radius: 8px; font-family: system-ui, sans-serif; color: #000;';
-        errorDiv.innerHTML = `
-          <h3 style="color: #ff4444; margin: 0 0 10px 0;">❌ Fehler beim Laden der Mission</h3>
-          <p style="margin: 10px 0;"><strong>Problem:</strong> Die Missions-Daten konnten nicht geladen werden.</p>
-          <p style="margin: 10px 0;"><strong>Mögliche Ursache:</strong> Die HTML-Datei wurde direkt vom Dateisystem geöffnet (file:// Protokoll). Browser blockieren aus Sicherheitsgründen den Zugriff auf externe Ressourcen.</p>
-          <p style="margin: 10px 0;"><strong>Lösungen:</strong></p>
-          <ul style="margin: 10px 0; padding-left: 20px;">
-            <li>Öffne die Datei über einen lokalen Webserver (z.B. mit "Live Server" Extension in VS Code)</li>
-            <li>Nutze die CDN-Version direkt im Browser: <a href="https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/moodle_textfile_m1-01.html" style="color: #0066cc;">https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/moodle_textfile_m1-01.html</a></li>
-            <li>Lade die HTML-Datei in ein LMS (z.B. Moodle) hoch</li>
-          </ul>
-          <details style="margin-top: 15px;">
-            <summary style="cursor: pointer; color: #666;">Technische Details anzeigen</summary>
-            <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; margin-top: 10px; overflow-x: auto; font-size: 12px;">${err.stack || err.message}</pre>
-          </details>
-        `;
-        wrap.insertBefore(errorDiv, wrap.firstChild);
-      }
-
+      if (elPyStatus) elPyStatus.textContent = 'Fehler: missions.js laden fehlgeschlagen';
       throw err;
     }
   }
@@ -564,9 +529,9 @@
       config.objectives.forEach(obj => {
         const div = document.createElement('div');
         div.className = 'sbp-obj';
-        div.innerHTML = obj.type === 'primary'
+        div.innerHTML = obj.type === 'primary' 
           ? `<div><strong>${obj.text}</strong></div>`
-          : `<div><strong>${obj.text}</strong></div>`;
+          : `: `<div><strong>${obj.text}</strong></div>`;
         elObjectivesContainer.appendChild(div);
       });
     }
