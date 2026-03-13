@@ -5,7 +5,7 @@
   // 1. Mission-Config und Engine parallel laden
   const [missionData, enginePy] = await Promise.all([
     fetch(BASE + 'missions/' + missionId + '.json').then(r => r.json()),
-    fetch(BASE + 'engine/engine.py').then(r => r.text())
+    fetch(BASE + 'missions/engine.py').then(r => r.text())
   ]);
 
   // 2. Runtime starten (vireon-runtime.js nutzt missionData + enginePy)
