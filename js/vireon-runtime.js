@@ -10,13 +10,14 @@
 
   // ===== CONFIG =====
   const CELL_SIZE = 32;
-  const GRID_WIDTH = 20;
+  const GRID_WIDTH = 15;
   const GRID_HEIGHT = 15;
 
   // ===== STATE =====
   let pyodide = null;
   let gameState = null;
   let imageCache = {};
+  let isRunning = false;
 
   // ===== ROOT CONTAINER =====
   const root = document.createElement('div');
@@ -39,7 +40,7 @@
   canvasWrapper.appendChild(canvas);
   left.appendChild(canvasWrapper);
 
-  // ===== RIGHT: BRIEFING + OBJECTIVES + CONTROLS =====
+  // ===== RIGHT: BRIEFING + OBJECTIVES + CODE EDITOR + CONTROLS =====
   const right = document.createElement('div');
   right.style.display = 'flex';
   right.style.flexDirection = 'column';
@@ -48,23 +49,71 @@
   const titleEl = document.createElement('h2');
   titleEl.textContent = mission.title || mission.id;
   titleEl.style.margin = '0';
+  titleEl.style.fontSize = '1.2rem';
   right.appendChild(titleEl);
 
   const briefingPanel = document.createElement('div');
   briefingPanel.className = 'vireon-panel vireon-briefing';
+  briefingPanel.style.fontSize = '0.85rem';
   briefingPanel.textContent = mission.briefing || '';
   right.appendChild(briefingPanel);
 
   const objPanel = document.createElement('div');
   objPanel.className = 'vireon-panel vireon-objectives';
+  objPanel.style.fontSize = '0.85rem';
   objPanel.textContent = mission.objectives_text || '';
   right.appendChild(objPanel);
+
+  // Code Editor
+  const codePanel = document.createElement('div');
+  codePanel.className = 'vireon-panel';
+  codePanel.style.display = 'flex';
+  codePanel.style.flexDirection = 'column';
+  codePanel.style.gap = '6px';
+
+  const codeLabel = document.createElement('strong');
+  codeLabel.textContent = 'Dein Code:';
+  codeLabel.style.fontSize = '0.85rem';
+  codePanel.appendChild(codeLabel);
+
+  const codeEditor = document.createElement('textarea');
+  codeEditor.style.fontFamily = 'monospace';
+  codeEditor.style.fontSize = '0.85rem';
+  codeEditor.style.minHeight = '120px';
+  codeEditor.style.padding = '8px';
+  codeEditor.style.border = '1px solid rgba(255,255,255,0.1)';
+  codeEditor.style.borderRadius = '4px';
+  codeEditor.style.background = 'rgba(0,0,0,0.3)';
+  codeEditor.style.color = '#f5f5f5';
+  codeEditor.style.resize = 'vertical';
+  codeEditor.placeholder = '# Schreibe deinen Code hier...\nmove()\nturnLeft()\n...';
+  codePanel.appendChild(codeEditor);
+
+  // Run Button
+  const runButton = document.createElement('button');
+  runButton.textContent = '▶ Code ausführen';
+  runButton.style.padding = '8px 16px';
+  runButton.style.fontSize = '0.9rem';
+  runButton.style.fontWeight = 'bold';
+  runButton.style.background = '#4caf50';
+  runButton.style.color = 'white';
+  runButton.style.border = 'none';
+  runButton.style.borderRadius = '4px';
+  runButton.style.cursor = 'pointer';
+  runButton.disabled = true;
+
+  runButton.addEventListener('click', async () => {
+    await runUserCode();
+  });
+
+  codePanel.appendChild(runButton);
+  right.appendChild(codePanel);
 
   // Status Display
   const statusPanel = document.createElement('div');
   statusPanel.className = 'vireon-panel';
   statusPanel.style.fontFamily = 'monospace';
-  statusPanel.style.fontSize = '0.85rem';
+  statusPanel.style.fontSize = '0.8rem';
   statusPanel.innerHTML = '<strong>Status:</strong> Initialisiere...';
   right.appendChild(statusPanel);
 
@@ -130,7 +179,6 @@
         const url = e.station_urls[idx % e.station_urls.length];
         const img = imageCache[url];
         if (img) {
-          // Station ist 3x3 grid
           ctx.drawImage(
             img,
             pos[0] * CELL_SIZE,
@@ -189,7 +237,6 @@
         );
         ctx.restore();
       } else {
-        // Fallback
         ctx.fillStyle = '#ffeb3b';
         ctx.fillRect(
           p.x * CELL_SIZE,
@@ -199,7 +246,6 @@
         );
       }
     } else if (e.start) {
-      // Initial player position
       ctx.fillStyle = '#ffeb3b';
       ctx.fillRect(
         e.start.x * CELL_SIZE,
@@ -214,7 +260,6 @@
   async function initPyodide() {
     statusPanel.innerHTML = '<strong>Status:</strong> Lade Pyodide...';
 
-    // Load Pyodide from CDN
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js';
     document.head.appendChild(script);
@@ -226,11 +271,9 @@
     pyodide = await loadPyodide();
     statusPanel.innerHTML = '<strong>Status:</strong> Pyodide geladen.';
 
-    // Load engine
     await pyodide.runPythonAsync(engineSource);
     statusPanel.innerHTML = '<strong>Status:</strong> Engine geladen.';
 
-    // Initialize game
     await pyodide.runPythonAsync(`
 import json
 mission_data = json.loads('''${JSON.stringify(mission)}''')
@@ -247,7 +290,54 @@ engine.reset()
     };
 
     statusPanel.innerHTML = '<strong>Status:</strong> Bereit!';
+    runButton.disabled = false;
     renderGrid();
+  }
+
+  // ===== RUN USER CODE =====
+  async function runUserCode() {
+    if (isRunning || !pyodide) return;
+
+    isRunning = true;
+    runButton.disabled = true;
+    statusPanel.innerHTML = '<strong>Status:</strong> Code wird ausgeführt...';
+
+    const userCode = codeEditor.value;
+
+    try {
+      const result = await pyodide.runPythonAsync(`
+${userCode}
+engine.get_state()
+      `);
+
+      const state = result.toJs({ dict_converter: Object.fromEntries });
+      
+      if (state && state.player) {
+        gameState.player = {
+          x: state.player.x,
+          y: state.player.y,
+          dir: state.player.dir
+        };
+      }
+
+      renderGrid();
+      statusPanel.innerHTML = '<strong>Status:</strong> Code erfolgreich ausgeführt!';
+
+      if (state && state.status === 'won') {
+        statusPanel.innerHTML = '<strong>🎉 Gewonnen!</strong> Mission erfüllt!';
+        statusPanel.style.background = '#1b5e20';
+      } else if (state && state.status === 'failed') {
+        statusPanel.innerHTML = '<strong>❌ Fehlgeschlagen:</strong> ' + (state.message || 'Mission nicht erfüllt');
+        statusPanel.style.background = '#b71c1c';
+      }
+    } catch (err) {
+      console.error('Python execution error:', err);
+      statusPanel.innerHTML = '<strong>Fehler:</strong> ' + err.message;
+      statusPanel.style.background = '#b71c1c';
+    } finally {
+      isRunning = false;
+      runButton.disabled = false;
+    }
   }
 
   // ===== PRELOAD ASSETS & START =====
@@ -266,6 +356,7 @@ engine.reset()
     } catch (err) {
       console.error('VIREON init error:', err);
       statusPanel.innerHTML = '<strong>Fehler:</strong> ' + err.message;
+      statusPanel.style.background = '#b71c1c';
     }
   }
 
