@@ -53,7 +53,7 @@
   root.appendChild(left);
   root.appendChild(right);
 
-  // In Seite einhängen (unterstes geeignetes Element suchen)
+  // In Seite einhaengen
   const target =
     document.getElementById('region-main') ||
     document.querySelector('#maincontent') ||
@@ -61,13 +61,12 @@
 
   target.appendChild(root);
 
-  // Platzhalter-Rendering (nur Hintergrundfarbe und Startposition)
+  // Platzhalter-Rendering
   const ctx = canvas.getContext('2d');
   if (ctx) {
     ctx.fillStyle = '#000020';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Startposition aus Mission markieren
     const start = mission.engine && mission.engine.start;
     if (start) {
       const cellSize = 32;
@@ -81,5 +80,5 @@
     }
   }
 
-  // Hier später: Pyodide + Engine-Integration mit engineSource
+  // TODO: Pyodide + Engine-Integration mit engineSource
 })();
