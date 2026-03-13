@@ -488,6 +488,14 @@
 
       pyodide = await loadPyodide();
       await pyodide.runPythonAsync(enginePy);
+
+      // Configure engine with mission data from JSON
+      await pyodide.runPythonAsync(`
+import json
+mission_data = json.loads('''${JSON.stringify(mission)}''')
+configure_engine(mission_data)
+      `);
+
       elPyStatus.textContent = 'Python 3 bereit.';
     } catch (err) {
       elPyStatus.textContent = 'Fehler.';

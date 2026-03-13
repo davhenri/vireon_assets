@@ -1,7 +1,7 @@
 import json
 import traceback
 
-MISSION_ID = "m1-06"
+MISSION_ID = "configurable"
 
 class SimError(Exception):
     pass
@@ -10,28 +10,106 @@ _DIRS = ["N","E","S","W"]
 _DELTA = {"N":(0,1),"E":(1,0),"S":(0,-1),"W":(-1,0)}
 
 class Engine:
-    def __init__(self):
+    def __init__(self, config=None):
+        """Initialize engine with optional mission configuration.
+
+        Args:
+            config: Dictionary with mission configuration from JSON.
+                   If None, uses default m1-06 configuration for backward compatibility.
+        """
         self.gridW = 15
         self.gridH = 15
-        self.startX, self.startY, self.startDir = 2, 7, "E"
-        self.goalX, self.goalY = -1, -1
-        self.hasGoal = False
-        self.initAsteroids = []
-        self.initOpenings = [[10, 7]]
-        self.initFieldPow = []
-        self.initStations = [[5, 7]]
-        self.stationDocks = set(tuple(d) for d in [[8, 8]])
-        self.stationCollision = set(tuple(c) for c in [[5, 7], [5, 8], [5, 9], [6, 7], [6, 8], [6, 9], [7, 7], [7, 8], [7, 9]])
-        self.initAliens = []
-        self.initAmmo = []
-        self.initPlayerPow = 0
-        self.initPlayerAmmo = 0
-        self.closeN = 1
-        self.destroyN = 0
-        self.collectN = 0
-        self.deliverN = 0
-        self.initPatrols = []
+
+        # Use config if provided, otherwise use default m1-06 values
+        if config:
+            self._configure_from_dict(config)
+        else:
+            # Default m1-06 configuration for backward compatibility
+            self.startX, self.startY, self.startDir = 2, 7, "E"
+            self.goalX, self.goalY = -1, -1
+            self.hasGoal = False
+            self.initAsteroids = []
+            self.initOpenings = [[10, 7]]
+            self.initFieldPow = []
+            self.initStations = [[5, 7]]
+            self.stationDocks = set(tuple(d) for d in [[8, 8]])
+            self.stationCollision = set(tuple(c) for c in [[5, 7], [5, 8], [5, 9], [6, 7], [6, 8], [6, 9], [7, 7], [7, 8], [7, 9]])
+            self.initAliens = []
+            self.initAmmo = []
+            self.initPlayerPow = 0
+            self.initPlayerAmmo = 0
+            self.closeN = 1
+            self.destroyN = 0
+            self.collectN = 0
+            self.deliverN = 0
+            self.initPatrols = []
+
         self.reset()
+
+    def _configure_from_dict(self, config):
+        """Configure engine from mission dictionary."""
+        global MISSION_ID
+        MISSION_ID = config.get('id', 'unknown')
+
+        # Start position
+        start = config.get('start', {"x": 7, "y": 2, "dir": "N"})
+        self.startX = start.get('x', 7)
+        self.startY = start.get('y', 2)
+        self.startDir = start.get('dir', 'N')
+
+        # Goal position
+        goal = config.get('goal')
+        if goal:
+            self.goalX = goal.get('x', -1)
+            self.goalY = goal.get('y', -1)
+            self.hasGoal = True
+        else:
+            self.goalX = self.goalY = -1
+            self.hasGoal = False
+
+        # World elements
+        self.initAsteroids = config.get('asteroids', [])
+        self.initOpenings = config.get('openings', [])
+        self.initFieldPow = config.get('field_powerups', [])
+        self.initStations = config.get('stations', [])
+        self.initAliens = config.get('aliens', [])
+        self.initAmmo = config.get('ammo', [])
+
+        # Player starting inventory
+        self.initPlayerPow = config.get('start_powerups', 0)
+        self.initPlayerAmmo = config.get('start_ammo', 0)
+
+        # Station docks and collision zones
+        self.stationDocks = set(tuple(d) for d in config.get('station_docks', []))
+        self.stationCollision = set(tuple(c) for c in config.get('station_collision', []))
+
+        # If station_collision not provided, compute it from stations
+        if not self.stationCollision and self.initStations:
+            self.stationCollision = set()
+            for s in self.initStations:
+                sx, sy = s[0], s[1]
+                # Station occupies: x to x+3 (4 wide), y to y+2 (3 high)
+                for dx in range(4):
+                    for dy in range(3):
+                        self.stationCollision.add((sx + dx, sy + dy))
+
+        # If station_docks not provided, compute it from stations
+        if not self.stationDocks and self.initStations:
+            self.stationDocks = set()
+            for s in self.initStations:
+                sx, sy = s[0], s[1]
+                # Dock position: right-middle of the station (x+3, y+1)
+                self.stationDocks.add((sx + 3, sy + 1))
+
+        # Rules
+        rules = config.get('rules', {})
+        self.closeN = rules.get('close_openings', 0)
+        self.destroyN = rules.get('destroy_aliens', 0)
+        self.collectN = rules.get('collect_powerups', 0)
+        self.deliverN = rules.get('deliver_powerups', 0)
+
+        # Alien patrols
+        self.initPatrols = config.get('alien_patrols', [])
 
     def reset(self):
         self.tick = 0
@@ -324,7 +402,20 @@ class Engine:
             "message": msg
         }
 
+# Create default engine instance (backward compatibility)
 engine = Engine()
+
+def configure_engine(mission_config):
+    """Configure the global engine with mission data from JSON.
+
+    Args:
+        mission_config: Dictionary containing mission configuration with 'engine' key.
+                       Should match the structure from mission JSON files.
+    """
+    global engine
+    # Extract the engine configuration from the mission data
+    engine_config = mission_config.get('engine', {})
+    engine = Engine(engine_config)
 
 def move(): engine.move()
 def turnLeft(): engine.turnLeft()
