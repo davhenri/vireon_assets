@@ -469,7 +469,10 @@ def configure_engine(mission_config):
                        Supports both Version 2.0 schema (with 'world' key) and
                        simple schema (with 'engine' key).
     """
-    global engine
+    global engine, MISSION_ID
+    # Set mission ID from top-level config
+    MISSION_ID = mission_config.get('id', 'unknown')
+
     # Check if this is Version 2.0 format (has 'world' key)
     if 'world' in mission_config:
         # Version 2.0 schema - pass the entire mission config
@@ -477,6 +480,9 @@ def configure_engine(mission_config):
     else:
         # Simple schema - extract the engine configuration
         engine_config = mission_config.get('engine', {})
+        # Add id to engine config if not present
+        if 'id' not in engine_config:
+            engine_config['id'] = mission_config.get('id', 'unknown')
         engine = Engine(engine_config)
 
 def move(): engine.move()
