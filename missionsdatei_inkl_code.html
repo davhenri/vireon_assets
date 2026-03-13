@@ -1,0 +1,967 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/davhenri/vireon_assets/missions/mission.css">
+
+<div class="sbp-wrap">
+  <div class="sbp-hero">
+    <div class="sbp-title">
+      <div>
+        <div class="sbp-chip">MISSION FILE • 1.06</div>
+      </div>
+
+      <div class="sbp-chip">COMMANDS: <code style="color:var(--sbp-text);">move()</code> <code style="color:var(--sbp-text);">turnLeft()</code> <code style="color:var(--sbp-text);">turnRight()</code> <code style="color:var(--sbp-text);">putPow()</code> <code style="color:var(--sbp-text);">removePow()</code> <code style="color:var(--sbp-text);">loadPow()</code></div>
+    </div>
+
+    <div class="sbp-briefing">
+      <div class="sbp-officer">
+        <img id="officerGif" src="https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/mission_briefings/offizier_briefing_12s.gif" alt="Briefing-Offizier">
+      </div>
+      <div class="sbp-brief-card">
+        <div class="sbp-kicker">HOLO BRIEFING</div>
+        <p id="briefingText" class="sbp-body"></p>
+      </div>
+    </div>
+
+    <div class="sbp-objectives">
+            <div class="sbp-obj">
+        <div><strong>Primärziel: 1 Öffnung(en) mit putPow() schließen.</strong></div>
+      </div>
+      <div class="sbp-obj">
+        <div><strong>Befehle: move(), turnLeft(), turnRight(), putPow(), removePow(), loadPow()</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sbp-main" id="mainPanels">
+    <div class="row g-3">
+      <div class="col-12 col-lg-5">
+        <div class="sbp-panel">
+          <div class="sbp-panel-header">
+            <div class="title">🕹️ Kommando-Konsole</div>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <button type="button" class="sbp-btn sbp-mobile-toggle" id="btnCodeFocus" style="padding:6px 10px;">Nur Code</button>
+              <span id="pyStatus" class="badge rounded-pill">System l&auml;dt&hellip;</span>
+            </div>
+          </div>
+
+          <div class="sbp-editor">
+            <div class="sbp-codewrap">
+              <pre id="codeGutter" class="sbp-gutter">1</pre>
+              <textarea id="code" class="sbp-textarea" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" enterkeyhint="done"></textarea>
+            </div>
+            <div class="sbp-keybar" id="mobileKeybar">
+              <button type="button" class="sbp-keybtn" data-ins="(">(</button>
+              <button type="button" class="sbp-keybtn" data-ins=")">)</button>
+              <button type="button" class="sbp-keybtn" data-ins=":">:</button>
+              <button type="button" class="sbp-keybtn" data-ins=",">,</button>
+              <button type="button" class="sbp-keybtn" data-ins=".">.</button>
+              <button type="button" class="sbp-keybtn" data-ins="=">=</button>
+              <button type="button" class="sbp-keybtn" data-ins="_">_</button>
+              <button type="button" class="sbp-keybtn" data-ins="'">'</button>
+            </div>
+
+            <div class="sbp-controls">
+              <button type="button" class="sbp-btn" id="btnReset">Reset</button>
+              <button type="button" class="sbp-btn primary" id="btnRun">Run</button>
+              <button type="button" class="sbp-btn warn" id="btnStep">Step</button>
+              <button type="button" class="sbp-btn" id="btnContinue">Continue</button>
+              <button type="button" class="sbp-btn danger" id="btnStop">Stop</button>
+              <button type="button" class="sbp-btn" id="btnMotion">Motion: Ein</button>
+              <select id="speed" class="sbp-select">
+                <option value="1200">0.8&times;</option>
+                <option value="800">1&times;</option>
+                <option value="400" selected>2&times;</option>
+                <option value="200">4&times;</option>
+              </select>
+            </div>
+
+            <div class="sbp-metrics">
+              <div class="sbp-box">
+                <div class="label">STATUS</div>
+                <div id="simStatus" style="margin-top:6px; font-weight:900;">Bereit.</div>
+              </div>
+
+              <div class="sbp-box">
+                <div class="label">KONSOLE</div>
+                <pre id="console">(leer)</pre>
+              </div>
+
+              <div class="sbp-box sbp-reward">
+                <div class="label">MISSIONSBELOHNUNG</div>
+                <div style="margin-top:6px; color:var(--sbp-muted);">Freigeschaltet, sobald die Mission erf&uuml;llt ist.</div>
+
+                <div id="stashDropWrap" style="display:none; margin-top:10px;">
+                  [stashdrop secret="qR9sT0" text="Pick up!" image]
+                </div>
+
+                <div id="stashLocked" style="margin-top:10px; font-weight:900;">
+                  🔒 Noch nicht freigeschaltet.
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-7">
+        <div class="sbp-panel">
+          <div class="sbp-panel-header">
+            <div class="title">🌌 Simulation (15&times;15)</div>
+            <span id="tickLabel" class="badge rounded-pill">Tick: 0</span>
+          </div>
+
+
+
+          <div class="sbp-mapwrap">
+            <svg id="board" viewBox="0 0 600 600" class="sbp-map">
+              <defs>
+                <pattern id="spaceImg" patternUnits="userSpaceOnUse" width="600" height="600">
+                  <image href="https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/mission_briefings/bg.jpg"
+                         x="0" y="0" width="600" height="600"
+                         preserveAspectRatio="xMidYMid slice"></image>
+                </pattern>
+                <linearGradient id="spaceDim" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(0,0,0,0.20)"></stop>
+                  <stop offset="100%" stop-color="rgba(0,0,0,0.55)"></stop>
+                </linearGradient>
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <rect width="40" height="40" fill="transparent"></rect>
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(233,240,255,0.10)" stroke-width="1"></path>
+                </pattern>
+                <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+                  <stop offset="55%" stop-color="rgba(0,0,0,0)"></stop>
+                  <stop offset="100%" stop-color="rgba(0,0,0,0.58)"></stop>
+                </radialGradient>
+              </defs>
+              <rect x="0" y="0" width="600" height="600" fill="url(#spaceImg)"></rect>
+              <rect x="0" y="0" width="600" height="600" fill="url(#spaceDim)"></rect>
+              <rect x="0" y="0" width="600" height="600" fill="url(#grid)"></rect>
+              <rect x="0" y="0" width="600" height="600" fill="url(#vignette)"></rect>
+              <g id="layerOpenings"></g>
+              <g id="layerStations"></g>
+              <g id="layerAsteroids"></g>
+              <g id="layerAmmo"></g>
+              <g id="layerAliens"></g>
+              <g id="layerPowerups"></g>
+              <g id="layerLaser"></g>
+              <g id="layerExplosions"></g>
+              <image id="player" href="" x="0" y="0" width="40" height="40"></image>
+            </svg>
+
+            <div class="sbp-mapnote">
+              Gelbe Rahmen markieren Öffnungen. Stationen zum Laden/Entladen (Dock rechts).
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+
+  <script>
+  (() => {
+    const IMG = {
+      player:   'https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/vireon/player.svg',
+      asteroid: 'https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/vireon/asteroid.png',
+      powerup:  'https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/vireon/powerup.png',
+      station:  'https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/vireon/station.png',
+      alien:    'https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/vireon/alien.png',
+      ammo:     'https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/vireon/ammo.png'
+    };
+
+    const gridW = 15, gridH = 15, cell = 40;
+    const missionId = 'm1-06';
+
+    const mission = {
+      start: { x: 2, y: 7, dir: "E" },
+      goal: null,
+      asteroids: [],
+      openings: [[10, 7]],
+      field_powerups: [],
+      stations: [[5, 7]], 
+      station_urls: ["https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/vireon/stationBlue.png"],
+      aliens: [],
+      ammo: [],
+      start_powerups: 0,
+      start_ammo: 0,
+      rules: {"close_openings": 1}
+    };
+
+    const elCode = document.getElementById('code');
+    const elConsole = document.getElementById('console');
+    const elBriefingText = document.getElementById('briefingText');
+    const elOfficerGif = document.getElementById('officerGif');
+    const elPyStatus = document.getElementById('pyStatus');
+    const elSimStatus = document.getElementById('simStatus');
+    const elTickLabel = document.getElementById('tickLabel');
+    const briefingNarrative = "Pilot! Vor dir liegt eine Raumstation. Fliege zum Dock (rechtes mittleres Feld der Station) und lade mit loadPow() ein PowerUp. Stationen haben unendlich viele PowerUps! Dann lege es auf dem markierten Feld ab.";
+
+    const btnReset = document.getElementById('btnReset');
+    const btnRun = document.getElementById('btnRun');
+    const btnStep = document.getElementById('btnStep');
+    const btnContinue = document.getElementById('btnContinue');
+    const btnStop = document.getElementById('btnStop');
+    const btnMotion = document.getElementById('btnMotion');
+    const btnCodeFocus = document.getElementById('btnCodeFocus');
+    const speedSel = document.getElementById('speed');
+    const codeGutter = document.getElementById('codeGutter');
+    const mobileKeybar = document.getElementById('mobileKeybar');
+    const mainPanels = document.getElementById('mainPanels');
+    const wrap = document.querySelector('.sbp-wrap');
+
+    const stashDropWrap = document.getElementById('stashDropWrap');
+    const stashLocked = document.getElementById('stashLocked');
+
+    const layerOpenings = document.getElementById('layerOpenings');
+    const layerStations = document.getElementById('layerStations');
+    const layerAsteroids = document.getElementById('layerAsteroids');
+    const layerAmmo = document.getElementById('layerAmmo');
+    const layerAliens = document.getElementById('layerAliens');
+    const layerPowerups = document.getElementById('layerPowerups');
+    const layerLaser = document.getElementById('layerLaser');
+    const layerExplosions = document.getElementById('layerExplosions');
+    const player = document.getElementById('player');
+    const playerBaseHref = IMG.player;
+    const explosionGifData = 'https://cdn.jsdelivr.net/gh/davhenri/vireon_assets@main/vireon/explosion.gif';
+    player.setAttribute('href', playerBaseHref);
+    const CODE_STORAGE_KEY = 'sbp:code:' + missionId;
+    const MOTION_STORAGE_KEY = 'sbp:motion:' + missionId;
+    let saveCodeTimer = null;
+    let lowMotionEnabled = false;
+    let codeFocusEnabled = false;
+
+    function worldToSvgY(y) { return (gridH - 1 - y) * cell; }
+    function clearLayer(layer) { while (layer.firstChild) layer.removeChild(layer.firstChild); }
+    function makeImage(href, x, y, w, h) {
+      w = w || cell; h = h || cell;
+      const im = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      im.setAttribute('href', href);
+      im.setAttribute('x', x);
+      im.setAttribute('y', y);
+      im.setAttribute('width', w);
+      im.setAttribute('height', h);
+      return im;
+    }
+    function rotateImage(im, angleDeg) {
+      const x = parseFloat(im.getAttribute('x'));
+      const y = parseFloat(im.getAttribute('y'));
+      const w = parseFloat(im.getAttribute('width'));
+      const h = parseFloat(im.getAttribute('height'));
+      const cx = x + w/2;
+      const cy = y + h/2;
+      im.setAttribute('transform', 'rotate('+angleDeg+' '+cx+' '+cy+')');
+    }
+    function dirToAngle(dir) { return ({E:0, S:90, W:180, N:270})[dir] || 0; }
+    function setPlayerPose(x, y, dir) {
+      player.setAttribute('x', x * cell);
+      player.setAttribute('y', worldToSvgY(y));
+      rotateImage(player, dirToAngle(dir));
+    }
+    function animatePlayerTransition(fromState, toState, durationMs) {
+      if (!fromState || !toState || durationMs <= 0 || lowMotionEnabled) return Promise.resolve();
+      const fromX = fromState.x * cell;
+      const fromY = worldToSvgY(fromState.y);
+      const toX = toState.x * cell;
+      const toY = worldToSvgY(toState.y);
+      const fromA = dirToAngle(fromState.dir);
+      const toA = dirToAngle(toState.dir);
+      const start = performance.now();
+      return new Promise(function(resolve) {
+        function frame(now) {
+          const t = Math.min((now - start) / durationMs, 1);
+          const ix = fromX + (toX - fromX) * t;
+          const iy = fromY + (toY - fromY) * t;
+          const ia = fromA + (toA - fromA) * t;
+          player.setAttribute('x', ix);
+          player.setAttribute('y', iy);
+          rotateImage(player, ia);
+          if (t < 1) requestAnimationFrame(frame);
+          else resolve();
+        }
+        requestAnimationFrame(frame);
+      });
+    }
+    function playExplosionAt(x, y, sizeMult) {
+      sizeMult = sizeMult || 1.8;
+      const w = cell * sizeMult;
+      const h = w;
+      const ex = x * cell + (cell - w) / 2;
+      const ey = worldToSvgY(y) + (cell - h) / 2;
+      const blast = makeImage(explosionGifData, ex, ey, w, h);
+      layerExplosions.appendChild(blast);
+      setTimeout(function() {
+        try { blast.remove(); } catch (_) {}
+      }, 650);
+    }
+    function triggerPlayerExplosion() {
+      const px = parseFloat(player.getAttribute('x')) / cell;
+      const py = gridH - 1 - (parseFloat(player.getAttribute('y')) / cell);
+      playExplosionAt(px, py, 2.1);
+      // Midpoint of the short explosion gif: hide ship while blast is visible.
+      setTimeout(function() { player.style.opacity = '0'; }, 220);
+    }
+    function triggerAlienExplosion(x, y) {
+      const ghost = makeImage(IMG.alien, x*cell, worldToSvgY(y), cell, cell);
+      layerExplosions.appendChild(ghost);
+      playExplosionAt(x, y, 1.8);
+      // Midpoint hide to sync sprite disappearance with explosion playback.
+      setTimeout(function() {
+        try { ghost.remove(); } catch (_) {}
+      }, 220);
+    }
+
+    // Animation feedback for game actions
+    function showActionFeedback(x, y, type, opts) {
+      opts = opts || {};
+      const feedbackLayer = layerExplosions;
+      const fx = x * cell;
+      const fy = worldToSvgY(y);
+
+      if (type === 'powerup_pickup' || type === 'powerup_drop') {
+        // Show a glowing ring expanding from the powerup location
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', fx + cell/2);
+        circle.setAttribute('cy', fy + cell/2);
+        circle.setAttribute('r', cell * 0.3);
+        circle.setAttribute('fill', 'none');
+        circle.setAttribute('stroke', 'rgba(183,255,42,0.9)');
+        circle.setAttribute('stroke-width', '3');
+        feedbackLayer.appendChild(circle);
+
+        const startTime = performance.now();
+        const duration = 400;
+        function animateRing(now) {
+          const t = Math.min((now - startTime) / duration, 1);
+          const radius = cell * 0.3 + (cell * 0.5 * t);
+          const opacity = 0.9 * (1 - t);
+          circle.setAttribute('r', radius);
+          circle.setAttribute('stroke', 'rgba(183,255,42,' + opacity + ')');
+          if (t < 1) {
+            requestAnimationFrame(animateRing);
+          } else {
+            try { circle.remove(); } catch (_) {}
+          }
+        }
+        requestAnimationFrame(animateRing);
+      } else if (type === 'ammo_pickup') {
+        // Show a cyan/blue flash for ammo pickup
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', fx + cell/2);
+        circle.setAttribute('cy', fy + cell/2);
+        circle.setAttribute('r', cell * 0.4);
+        circle.setAttribute('fill', 'rgba(68,214,255,0.5)');
+        circle.setAttribute('stroke', 'rgba(68,214,255,0.9)');
+        circle.setAttribute('stroke-width', '2');
+        feedbackLayer.appendChild(circle);
+
+        const startTime = performance.now();
+        const duration = 350;
+        function animateFlash(now) {
+          const t = Math.min((now - startTime) / duration, 1);
+          const opacity = 0.9 * (1 - t);
+          circle.setAttribute('fill', 'rgba(68,214,255,' + (0.5 * (1-t)) + ')');
+          circle.setAttribute('stroke', 'rgba(68,214,255,' + opacity + ')');
+          if (t < 1) {
+            requestAnimationFrame(animateFlash);
+          } else {
+            try { circle.remove(); } catch (_) {}
+          }
+        }
+        requestAnimationFrame(animateFlash);
+      } else if (type === 'station_load' || type === 'station_unload') {
+        // Show a flowing energy effect at the dock
+        const isLoad = type === 'station_load';
+        const color = isLoad ? 'rgba(68,214,255,0.8)' : 'rgba(183,255,42,0.8)';
+
+        // Create multiple particles flowing to/from station
+        for (let i = 0; i < 5; i++) {
+          setTimeout(function() {
+            const particle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            particle.setAttribute('cx', fx + cell/2);
+            particle.setAttribute('cy', fy + cell/2);
+            particle.setAttribute('r', cell * 0.15);
+            particle.setAttribute('fill', color);
+            feedbackLayer.appendChild(particle);
+
+            const startTime = performance.now();
+            const duration = 500;
+            const angle = (i / 5) * Math.PI * 2;
+            const distance = cell * 1.5;
+
+            function animateParticle(now) {
+              const t = Math.min((now - startTime) / duration, 1);
+              const progress = isLoad ? (1 - t) : t;
+              const px = fx + cell/2 + Math.cos(angle) * distance * progress;
+              const py = fy + cell/2 + Math.sin(angle) * distance * progress;
+              const opacity = 0.8 * (1 - t);
+              particle.setAttribute('cx', px);
+              particle.setAttribute('cy', py);
+              particle.setAttribute('fill', color.replace('0.8', opacity.toString()));
+              if (t < 1) {
+                requestAnimationFrame(animateParticle);
+              } else {
+                try { particle.remove(); } catch (_) {}
+              }
+            }
+            requestAnimationFrame(animateParticle);
+          }, i * 80);
+        }
+      } else if (type === 'sensor_scan') {
+        // Show a scanning beam in the direction being scanned
+        const dir = opts.dir || 'N';
+        const delta = {N:[0,1], E:[1,0], S:[0,-1], W:[-1,0]}[dir] || [0,1];
+        const beam = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        const beamLength = cell * 3;
+
+        if (dir === 'N' || dir === 'S') {
+          beam.setAttribute('x', fx + cell * 0.4);
+          beam.setAttribute('y', dir === 'N' ? (fy - beamLength) : fy);
+          beam.setAttribute('width', cell * 0.2);
+          beam.setAttribute('height', beamLength);
+        } else {
+          beam.setAttribute('x', dir === 'E' ? fx : (fx - beamLength));
+          beam.setAttribute('y', fy + cell * 0.4);
+          beam.setAttribute('width', beamLength);
+          beam.setAttribute('height', cell * 0.2);
+        }
+
+        beam.setAttribute('fill', 'rgba(255,204,61,0.6)');
+        feedbackLayer.appendChild(beam);
+
+        const startTime = performance.now();
+        const duration = 300;
+        function animateBeam(now) {
+          const t = Math.min((now - startTime) / duration, 1);
+          const opacity = 0.6 * (1 - t);
+          beam.setAttribute('fill', 'rgba(255,204,61,' + opacity + ')');
+          if (t < 1) {
+            requestAnimationFrame(animateBeam);
+          } else {
+            try { beam.remove(); } catch (_) {}
+          }
+        }
+        requestAnimationFrame(animateBeam);
+      }
+    }
+
+    function setConsole(text) {
+      elConsole.textContent = text || '(leer)';
+      elConsole.scrollTop = elConsole.scrollHeight;
+    }
+    function getLineStart(value, pos) {
+      return value.lastIndexOf('\n', pos - 1) + 1;
+    }
+    function updateLineNumbers() {
+      if (!codeGutter) return;
+      const lineCount = Math.max(1, (elCode.value.match(/\n/g) || []).length + 1);
+      const nums = new Array(lineCount);
+      for (let i = 0; i < lineCount; i++) nums[i] = String(i + 1);
+      codeGutter.textContent = nums.join('\n') + '\n';
+      codeGutter.scrollTop = elCode.scrollTop;
+    }
+    function loadSavedCode() {
+      try { return localStorage.getItem(CODE_STORAGE_KEY) || null; }
+      catch (_) { return null; }
+    }
+    function persistCodeNow() {
+      try { localStorage.setItem(CODE_STORAGE_KEY, elCode.value); } catch (_) {}
+    }
+    function scheduleCodeSave() {
+      if (saveCodeTimer) clearTimeout(saveCodeTimer);
+      saveCodeTimer = setTimeout(persistCodeNow, 150);
+    }
+    function setLowMotion(enabled) {
+      lowMotionEnabled = !!enabled;
+      if (wrap) wrap.classList.toggle('sbp-reduce-motion', lowMotionEnabled);
+      if (btnMotion) btnMotion.textContent = 'Motion: ' + (lowMotionEnabled ? 'Aus' : 'Ein');
+      try { localStorage.setItem(MOTION_STORAGE_KEY, lowMotionEnabled ? 'off' : 'on'); } catch (_) {}
+    }
+    function toggleCodeFocus() {
+      codeFocusEnabled = !codeFocusEnabled;
+      if (mainPanels) mainPanels.classList.toggle('sbp-code-focus', codeFocusEnabled);
+      if (btnCodeFocus) btnCodeFocus.textContent = codeFocusEnabled ? 'Karte anzeigen' : 'Nur Code';
+    }
+    function insertAtCursor(text) {
+      const s = elCode.selectionStart, en = elCode.selectionEnd;
+      elCode.value = elCode.value.substring(0, s) + text + elCode.value.substring(en);
+      const next = s + text.length;
+      elCode.selectionStart = elCode.selectionEnd = next;
+      updateLineNumbers();
+      scheduleCodeSave();
+      elCode.focus();
+    }
+
+    function lockReward() {
+      stashDropWrap.style.display = 'none';
+      stashLocked.style.display = 'block';
+    }
+
+    function unlockReward() {
+      stashLocked.style.display = 'none';
+      stashDropWrap.style.display = 'block';
+    }
+
+    function freezeOfficerGifNow() {
+      if (!elOfficerGif || !elOfficerGif.naturalWidth || !elOfficerGif.naturalHeight) return;
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = elOfficerGif.naturalWidth;
+        canvas.height = elOfficerGif.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.drawImage(elOfficerGif, 0, 0, canvas.width, canvas.height);
+        canvas.style.display = 'block';
+        canvas.style.width = '100%';
+        canvas.style.height = 'auto';
+        elOfficerGif.replaceWith(canvas);
+      } catch (_) {}
+    }
+
+    function freezeOfficerGif() {
+      if (!elOfficerGif) return;
+      if (!elOfficerGif.complete || !elOfficerGif.naturalWidth) {
+        elOfficerGif.addEventListener('load', freezeOfficerGifNow, { once: true });
+        return;
+      }
+      freezeOfficerGifNow();
+    }
+
+    function playBriefingTransmission() {
+      if (!elBriefingText) return;
+      const fullText = '„' + (briefingNarrative || '') + '“';
+      if (lowMotionEnabled) {
+        elBriefingText.textContent = fullText;
+        freezeOfficerGif();
+        return;
+      }
+      let idx = 0;
+      elBriefingText.textContent = '';
+      const timer = setInterval(function() {
+        idx += 1;
+        elBriefingText.textContent = fullText.slice(0, idx);
+        if (idx >= fullText.length) {
+          clearInterval(timer);
+          freezeOfficerGif();
+        }
+      }, 24);
+    }
+
+    function drawGoalMarker(gx, gy) {
+      const board = document.getElementById('board');
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', gx * cell + cell/2);
+      circle.setAttribute('cy', worldToSvgY(gy) + cell/2);
+      circle.setAttribute('r', cell * 0.4);
+      circle.setAttribute('fill', 'rgba(183,255,42,0.25)');
+      circle.setAttribute('stroke', 'rgba(183,255,42,0.9)');
+      circle.setAttribute('stroke-width', '2');
+      board.insertBefore(circle, document.getElementById('player'));
+    }
+
+    function drawStartWorld() {
+      clearLayer(layerOpenings);
+      clearLayer(layerAsteroids);
+      clearLayer(layerPowerups);
+      clearLayer(layerStations);
+      clearLayer(layerAliens);
+      clearLayer(layerAmmo);
+      clearLayer(layerLaser);
+      clearLayer(layerExplosions);
+
+      mission.openings.forEach(function(o) {
+        var r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        r.setAttribute('x', o[0]*cell + 4);
+        r.setAttribute('y', worldToSvgY(o[1]) + 4);
+        r.setAttribute('width', cell - 8);
+        r.setAttribute('height', cell - 8);
+        r.setAttribute('fill', 'rgba(255,215,0,0.10)');
+        r.setAttribute('stroke', 'rgba(255,215,0,0.85)');
+        r.setAttribute('stroke-width', '2');
+        r.setAttribute('rx', '6');
+        r.setAttribute('ry', '6');
+        layerOpenings.appendChild(r);
+      });
+
+      mission.stations.forEach(function(s, idx) {
+        const stationUrl = mission.station_urls && mission.station_urls[idx] ? mission.station_urls[idx] : IMG.station;
+        layerStations.appendChild(makeImage(stationUrl, s[0]*cell, worldToSvgY(s[1] + 2), cell*4, cell*3));
+      });
+
+      mission.asteroids.forEach(function(a) {
+        layerAsteroids.appendChild(makeImage(IMG.asteroid, a[0]*cell, worldToSvgY(a[1])));
+      });
+
+      mission.ammo.forEach(function(a) {
+        layerAmmo.appendChild(makeImage(IMG.ammo, a[0]*cell + 6, worldToSvgY(a[1]) + 6, cell - 12, cell - 12));
+      });
+
+      mission.aliens.forEach(function(a) {
+        layerAliens.appendChild(makeImage(IMG.alien, a[0]*cell, worldToSvgY(a[1])));
+      });
+
+      mission.field_powerups.forEach(function(p) {
+        layerPowerups.appendChild(makeImage(IMG.powerup, p[0]*cell + 8, worldToSvgY(p[1]) + 8, cell - 16, cell - 16));
+      });
+
+      if (mission.goal) {
+        drawGoalMarker(mission.goal.x, mission.goal.y);
+      }
+
+      setPlayerPose(mission.start.x, mission.start.y, mission.start.dir);
+      player.setAttribute('href', playerBaseHref);
+      player.style.opacity = '1';
+      elTickLabel.textContent = 'Tick: 0';
+      elSimStatus.textContent = 'Reset.';
+      lockReward();
+      lastAlienKey = '';
+      lastAmmoKey = '';
+      lastRenderedState = { x: mission.start.x, y: mission.start.y, dir: mission.start.dir };
+    }
+
+    let lastAlienKey = '';
+    let lastAmmoKey = '';
+
+    function renderPowerupLayers(fieldPows, placedPows) {
+      clearLayer(layerPowerups);
+      (fieldPows || []).forEach(function(p) {
+        layerPowerups.appendChild(makeImage(IMG.powerup, p[0]*cell + 8, worldToSvgY(p[1]) + 8, cell - 16, cell - 16));
+      });
+      (placedPows || []).forEach(function(p) {
+        layerPowerups.appendChild(makeImage(IMG.powerup, p[0]*cell + 4, worldToSvgY(p[1]) + 4, cell - 8, cell - 8));
+      });
+    }
+
+    function renderAliens(aliens) {
+      var key = JSON.stringify(aliens || []);
+      if (key === lastAlienKey) return;
+      lastAlienKey = key;
+      clearLayer(layerAliens);
+      (aliens || []).forEach(function(a) {
+        layerAliens.appendChild(makeImage(IMG.alien, a[0]*cell, worldToSvgY(a[1])));
+      });
+    }
+
+    function renderAmmo(ammoList) {
+      var key = JSON.stringify(ammoList || []);
+      if (key === lastAmmoKey) return;
+      lastAmmoKey = key;
+      clearLayer(layerAmmo);
+      (ammoList || []).forEach(function(a) {
+        layerAmmo.appendChild(makeImage(IMG.ammo, a[0]*cell + 6, worldToSvgY(a[1]) + 6, cell - 12, cell - 12));
+      });
+    }
+
+    function renderLaser(lastShot) {
+      clearLayer(layerLaser);
+      if (!lastShot) return;
+      _renderTwinLaser(lastShot, 'rgba(255,77,109,0.95)', 'rgba(255,190,200,0.95)', function() {
+        if (lastShot.hit_alien) triggerAlienExplosion(lastShot.hit_alien[0], lastShot.hit_alien[1]);
+      });
+    }
+
+    function renderAlienLaser(shotData) {
+      if (!shotData) return;
+      _renderTwinLaser(shotData, 'rgba(0,255,80,0.92)', 'rgba(120,255,160,0.92)', function() {
+        if (shotData.hit_player) {
+          // Flash player red on hit
+          var pg = document.getElementById('sbp-player-g');
+          if (pg) { pg.style.filter = 'brightness(3) saturate(2) hue-rotate(-60deg)'; setTimeout(function(){ pg.style.filter=''; }, 600); }
+        }
+      });
+    }
+
+    function _renderTwinLaser(shotInfo, fillColor, strokeColor, onDone) {
+      var sx = shotInfo.from[0]*cell + cell/2;
+      var sy = worldToSvgY(shotInfo.from[1]) + cell/2;
+      var tx = shotInfo.to[0]*cell + cell/2;
+      var ty = worldToSvgY(shotInfo.to[1]) + cell/2;
+      var dx = tx - sx, dy = ty - sy;
+      var len = Math.hypot(dx, dy) || 1;
+      var ux = dx / len, uy = dy / len;
+      var px = -uy, py = ux; // perpendicular for upper/lower barrel offset
+      var side = Math.max(4, cell * 0.16);
+      var fwd = Math.max(2, cell * 0.2);
+      var starts = [
+        { x: sx + px*side + ux*fwd, y: sy + py*side + uy*fwd },
+        { x: sx - px*side + ux*fwd, y: sy - py*side + uy*fwd }
+      ];
+      var ends = [
+        { x: tx + px*side, y: ty + py*side },
+        { x: tx - px*side, y: ty - py*side }
+      ];
+      var projectiles = starts.map(function(s) {
+        var p = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        p.setAttribute('x', s.x - cell*0.14);
+        p.setAttribute('y', s.y - cell*0.045);
+        p.setAttribute('width', Math.max(10, cell*0.28));
+        p.setAttribute('height', Math.max(4, cell*0.09));
+        p.setAttribute('rx', '3');
+        p.setAttribute('ry', '3');
+        p.setAttribute('fill', fillColor);
+        p.setAttribute('stroke', strokeColor);
+        p.setAttribute('stroke-width', '1');
+        p.setAttribute('transform', 'rotate(' + ((Math.atan2(dy, dx) * 180 / Math.PI)) + ' ' + s.x + ' ' + s.y + ')');
+        layerLaser.appendChild(p);
+        return p;
+      });
+      var dist = Math.hypot(tx - sx, ty - sy);
+      var dur = lowMotionEnabled ? 10 : Math.max(80, Math.min(420, dist * 1.8));
+      var started = performance.now();
+      function frame(now) {
+        var t = Math.min((now - started) / dur, 1);
+        for (var i = 0; i < projectiles.length; i++) {
+          var cx = starts[i].x + (ends[i].x - starts[i].x) * t;
+          var cy = starts[i].y + (ends[i].y - starts[i].y) * t;
+          projectiles[i].setAttribute('x', cx - cell*0.14);
+          projectiles[i].setAttribute('y', cy - cell*0.045);
+          projectiles[i].setAttribute('transform', 'rotate(' + ((Math.atan2(dy, dx) * 180 / Math.PI)) + ' ' + cx + ' ' + cy + ')');
+        }
+        if (t < 1) requestAnimationFrame(frame);
+        else {
+          projectiles.forEach(function(p){ if(p.parentNode) p.parentNode.removeChild(p); });
+          if (onDone) onDone();
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    var lastRenderedAlienShotTick = null;
+    var lastRenderedAnimationTick = null;
+
+    async function renderState(state, opts) {
+      if (!state || typeof state.tick !== 'number' || typeof state.x !== 'number' || typeof state.y !== 'number') {
+        setConsole('Interner Fehler: Ung\u00fcltiger Status:\n' + JSON.stringify(state));
+        elSimStatus.textContent = 'Interner Fehler (siehe Konsole).';
+        return;
+      }
+      opts = opts || {};
+      const animateMs = opts.animateMs || 0;
+      if (animateMs > 0 && lastRenderedState) {
+        await animatePlayerTransition(lastRenderedState, state, animateMs);
+      } else {
+        setPlayerPose(state.x, state.y, state.dir);
+      }
+      lastRenderedState = { x: state.x, y: state.y, dir: state.dir };
+
+      renderPowerupLayers(state.field_powerups, state.powerups);
+      renderAliens(state.aliens);
+      renderAmmo(state.field_ammo);
+      if (state.last_shot && state.last_shot.tick !== lastRenderedShotTick) {
+        renderLaser(state.last_shot);
+        lastRenderedShotTick = state.last_shot.tick;
+      }
+      // Render green alien laser shots
+      if (state.alien_shots && state.alien_shots.length > 0) {
+        var aTick = state.alien_shots[0].tick;
+        if (aTick !== lastRenderedAlienShotTick) {
+          state.alien_shots.forEach(function(as){ renderAlienLaser(as); });
+          lastRenderedAlienShotTick = aTick;
+        }
+      }
+
+      // Render action animations
+      if (state.last_animation && state.last_animation.tick !== lastRenderedAnimationTick) {
+        const anim = state.last_animation;
+        if (!lowMotionEnabled) {
+          showActionFeedback(anim.x, anim.y, anim.type, { dir: anim.dir });
+        }
+        lastRenderedAnimationTick = anim.tick;
+      }
+
+      elTickLabel.textContent = 'Tick: ' + state.tick;
+      if (state.message) elSimStatus.textContent = state.message;
+      if (state.player_alive === false) {
+        elSimStatus.textContent = '\u274c Dein Schiff wurde getroffen!';
+        elSimStatus.style.color = 'var(--sbp-danger)';
+      }
+      if (state.solved) unlockReward();
+    }
+
+    const enginePy = "import json\nimport traceback\nMISSION_ID = \"m1-06\"\n\nclass SimError(Exception): pass\n\n_DIRS = [\"N\",\"E\",\"S\",\"W\"]\n_DELTA = {\"N\":(0,1),\"E\":(1,0),\"S\":(0,-1),\"W\":(-1,0)}\n\nclass Engine:\n    def __init__(self):\n        self.gridW = 15\n        self.gridH = 15\n        self.startX, self.startY, self.startDir = 2, 7, \"E\"\n        self.goalX, self.goalY = -1, -1\n        self.hasGoal = False\n        self.initAsteroids = []\n        self.initOpenings = [[10, 7]]\n        self.initFieldPow = []\n        self.initStations = [[5, 7]]\n        self.stationDocks = set(tuple(d) for d in [[8, 8]])\n        self.stationCollision = set(tuple(c) for c in [[5, 7], [5, 8], [5, 9], [6, 7], [6, 8], [6, 9], [7, 7], [7, 8], [7, 9]])\n        self.initAliens = []\n        self.initAmmo = []\n        self.initPlayerPow = 0\n        self.initPlayerAmmo = 0\n        self.closeN = 1\n        self.destroyN = 0\n        self.collectN = 0\n        self.deliverN = 0\n        self.initPatrols = []\n        self.reset()\n\n    def reset(self):\n        self.tick = 0\n        self.x = self.startX\n        self.y = self.startY\n        self.dir = self.startDir\n        self.asteroids = set(tuple(a) for a in self.initAsteroids)\n        self.openingsOpen = set(tuple(o) for o in self.initOpenings)\n        self.fieldPow = set(tuple(p) for p in self.initFieldPow)\n        self.placedPow = set()\n        self.aliens = set(tuple(a) for a in self.initAliens)\n        self.destroyedAliens = set()\n        self.fieldAmmo = set(tuple(a) for a in self.initAmmo)\n        self.playerPow = self.initPlayerPow\n        self.playerAmmo = self.initPlayerAmmo\n        self.delivered = 0\n        self.lastShot = None\n        self.alienShots = []\n        self.lastAnimation = None\n        self.playerAlive = True\n        self.patrols = []\n        for ap in self.initPatrols:\n            self.patrols.append({\n                \"pattern\": [tuple(p) for p in ap[\"pattern\"]],\n                \"idx\": 0,\n                \"dir\": ap.get(\"dir\", \"N\"),\n                \"shoots\": ap.get(\"shoots\", False),\n            })\n        self.actions = []\n        self.actionIndex = 0\n\n    def _forward(self):\n        return _DELTA[self.dir]\n\n    def _ahead(self):\n        dx, dy = self._forward()\n        return self.x + dx, self.y + dy\n\n    # --- Sensor API ---\n    def wallAhead(self):\n        nx, ny = self._ahead()\n        self.lastAnimation = {\"type\": \"sensor_scan\", \"x\": self.x, \"y\": self.y, \"dir\": self.dir, \"tick\": self.tick}\n        return not (0 <= nx < self.gridW and 0 <= ny < self.gridH)\n\n    def freeAhead(self):\n        nx, ny = self._ahead()\n        self.lastAnimation = {\"type\": \"sensor_scan\", \"x\": self.x, \"y\": self.y, \"dir\": self.dir, \"tick\": self.tick}\n        if not (0 <= nx < self.gridW and 0 <= ny < self.gridH):\n            return False\n        if (nx, ny) in self.asteroids or (nx, ny) in self.stationCollision or (nx, ny) in self.aliens:\n            return False\n        return True\n\n    def isAsteroidAhead(self):\n        nx, ny = self._ahead()\n        self.lastAnimation = {\"type\": \"sensor_scan\", \"x\": self.x, \"y\": self.y, \"dir\": self.dir, \"tick\": self.tick}\n        return (nx, ny) in self.asteroids\n\n    def isOpeningAhead(self):\n        nx, ny = self._ahead()\n        self.lastAnimation = {\"type\": \"sensor_scan\", \"x\": self.x, \"y\": self.y, \"dir\": self.dir, \"tick\": self.tick}\n        return (nx, ny) in self.openingsOpen\n\n    def isAlienAhead(self):\n        nx, ny = self._ahead()\n        self.lastAnimation = {\"type\": \"sensor_scan\", \"x\": self.x, \"y\": self.y, \"dir\": self.dir, \"tick\": self.tick}\n        return (nx, ny) in self.aliens\n\n    def scanForward(self):\n        nx, ny = self._ahead()\n        self.lastAnimation = {\"type\": \"sensor_scan\", \"x\": self.x, \"y\": self.y, \"dir\": self.dir, \"tick\": self.tick}\n        if not (0 <= nx < self.gridW and 0 <= ny < self.gridH):\n            return \"wall\"\n        if (nx, ny) in self.asteroids:\n            return \"asteroid\"\n        if (nx, ny) in self.aliens:\n            return \"alien\"\n        if (nx, ny) in self.openingsOpen:\n            return \"opening\"\n        if (nx, ny) in self.fieldPow or (nx, ny) in self.placedPow:\n            return \"powerup\"\n        if (nx, ny) in self.fieldAmmo:\n            return \"ammo\"\n        if (nx, ny) in self.stationCollision or (nx, ny) in self.stationDocks:\n            return \"station\"\n        if self.hasGoal and nx == self.goalX and ny == self.goalY:\n            return \"goal\"\n        return \"empty\"\n\n    # --- Movement & actions ---\n    def move(self):\n        dx, dy = self._forward()\n        nx, ny = self.x + dx, self.y + dy\n        if nx < 0 or nx >= self.gridW or ny < 0 or ny >= self.gridH:\n            raise SimError(f\"FEHLER: move() gegen Wand (Ziel {nx},{ny}).\")\n        if (nx, ny) in self.asteroids:\n            raise SimError(f\"FEHLER: Kollision mit Asteroid auf Feld ({nx},{ny}).\")\n        if (nx, ny) in self.stationCollision:\n            raise SimError(f\"FEHLER: Kollision mit Asteroid auf Feld ({nx},{ny}).\")\n        if (nx, ny) in self.aliens:\n            raise SimError(f\"FEHLER: Kollision mit Alienschiff auf Feld ({nx},{ny}).\")\n        self.x, self.y = nx, ny\n        self.tick += 1\n\n    def turnLeft(self):\n        self.dir = {\"N\":\"W\",\"W\":\"S\",\"S\":\"E\",\"E\":\"N\"}[self.dir]\n        self.tick += 1\n\n    def turnRight(self):\n        self.dir = {\"N\":\"E\",\"E\":\"S\",\"S\":\"W\",\"W\":\"N\"}[self.dir]\n        self.tick += 1\n\n    def putPow(self):\n        if self.playerPow <= 0:\n            raise SimError(\"FEHLER: putPow() - Kein PowerUp im Inventar!\")\n        pos = (self.x, self.y)\n        if pos in self.placedPow:\n            raise SimError(f\"FEHLER: Hier liegt bereits ein PowerUp auf ({self.x},{self.y}).\")\n        self.placedPow.add(pos)\n        self.openingsOpen.discard(pos)\n        self.playerPow -= 1\n        self.tick += 1\n        self.lastAnimation = {\"type\": \"powerup_drop\", \"x\": self.x, \"y\": self.y, \"tick\": self.tick}\n\n    def removePow(self):\n        pos = (self.x, self.y)\n        if pos in self.fieldPow:\n            self.fieldPow.discard(pos)\n        elif pos in self.placedPow:\n            self.placedPow.discard(pos)\n        else:\n            raise SimError(f\"FEHLER: removePow() - Kein PowerUp auf Feld ({self.x},{self.y})!\")\n        self.playerPow += 1\n        self.tick += 1\n        self.lastAnimation = {\"type\": \"powerup_pickup\", \"x\": self.x, \"y\": self.y, \"tick\": self.tick}\n\n    def loadPow(self):\n        pos = (self.x, self.y)\n        if pos not in self.stationDocks:\n            raise SimError(f\"FEHLER: loadPow() - Kein Stations-Dock auf ({self.x},{self.y})!\")\n        self.playerPow += 1\n        self.tick += 1\n        self.lastAnimation = {\"type\": \"station_load\", \"x\": self.x, \"y\": self.y, \"tick\": self.tick}\n\n    def unloadPow(self):\n        pos = (self.x, self.y)\n        if pos not in self.stationDocks:\n            raise SimError(f\"FEHLER: unloadPow() - Kein Stations-Dock auf ({self.x},{self.y})!\")\n        if self.playerPow <= 0:\n            raise SimError(\"FEHLER: unloadPow() - Kein PowerUp im Inventar!\")\n        self.playerPow -= 1\n        self.delivered += 1\n        self.tick += 1\n        self.lastAnimation = {\"type\": \"station_unload\", \"x\": self.x, \"y\": self.y, \"tick\": self.tick}\n\n    def removeAmmo(self):\n        pos = (self.x, self.y)\n        if pos not in self.fieldAmmo:\n            raise SimError(f\"FEHLER: removeAmmo() - Keine Munition auf ({self.x},{self.y})!\")\n        self.fieldAmmo.discard(pos)\n        self.playerAmmo += 1\n        self.tick += 1\n        self.lastAnimation = {\"type\": \"ammo_pickup\", \"x\": self.x, \"y\": self.y, \"tick\": self.tick}\n\n    def shoot(self):\n        if self.playerAmmo <= 0:\n            raise SimError(\"FEHLER: shoot() - Keine Munition!\")\n        self.playerAmmo -= 1\n        dx, dy = self._forward()\n        bx, by = self.x + dx, self.y + dy\n        hitAlien = None\n        beamEnd = [self.x, self.y]\n        while 0 <= bx < self.gridW and 0 <= by < self.gridH:\n            if (bx, by) in self.asteroids:\n                beamEnd = [bx, by]\n                break\n            if (bx, by) in self.aliens:\n                hitAlien = (bx, by)\n                beamEnd = [bx, by]\n                break\n            beamEnd = [bx, by]\n            bx += dx\n            by += dy\n        if hitAlien:\n            self.aliens.discard(hitAlien)\n            self.destroyedAliens.add(hitAlien)\n        self.lastShot = {\n            \"from\": [self.x, self.y],\n            \"to\": beamEnd,\n            \"dir\": self.dir,\n            \"hit_alien\": list(hitAlien) if hitAlien else None,\n            \"tick\": self.tick + 1\n        }\n        self.tick += 1\n\n    # --- Moving aliens ---\n    def stepAliens(self):\n        self.alienShots = []\n        for patrol in self.patrols:\n            pattern = patrol[\"pattern\"]\n            if not pattern:\n                continue\n            oldPos = pattern[patrol[\"idx\"]]\n            patrol[\"idx\"] = (patrol[\"idx\"] + 1) % len(pattern)\n            newPos = pattern[patrol[\"idx\"]]\n            self.aliens.discard(oldPos)\n            if newPos not in self.destroyedAliens:\n                self.aliens.add(newPos)\n            dx2 = newPos[0] - oldPos[0]\n            dy2 = newPos[1] - oldPos[1]\n            if dx2 > 0: patrol[\"dir\"] = \"E\"\n            elif dx2 < 0: patrol[\"dir\"] = \"W\"\n            elif dy2 > 0: patrol[\"dir\"] = \"N\"\n            elif dy2 < 0: patrol[\"dir\"] = \"S\"\n            if patrol[\"shoots\"] and newPos not in self.destroyedAliens:\n                shot = self._alienTryShoot(newPos)\n                if shot:\n                    self.alienShots.append(shot)\n\n    def _alienTryShoot(self, apos):\n        ax, ay = apos\n        for d in _DIRS:\n            ddx, ddy = _DELTA[d]\n            bx2, by2 = ax + ddx, ay + ddy\n            while 0 <= bx2 < self.gridW and 0 <= by2 < self.gridH:\n                if (bx2, by2) in self.asteroids:\n                    break\n                if bx2 == self.x and by2 == self.y:\n                    self.playerAlive = False\n                    return {\"from\": list(apos), \"to\": [self.x, self.y], \"dir\": d, \"hit_player\": True, \"tick\": self.tick}\n                bx2 += ddx\n                by2 += ddy\n        return None\n\n    def isSolved(self):\n        if not self.playerAlive:\n            return False\n        if self.hasGoal:\n            if self.x != self.goalX or self.y != self.goalY:\n                return False\n        if self.closeN > 0:\n            closed = sum(1 for o in self.initOpenings if tuple(o) in self.placedPow)\n            if closed < self.closeN:\n                return False\n        if self.destroyN > 0:\n            if len(self.destroyedAliens) < self.destroyN:\n                return False\n        if self.collectN > 0:\n            if self.playerPow < self.collectN:\n                return False\n        if self.deliverN > 0:\n            if self.delivered < self.deliverN:\n                return False\n        return True\n\n    def statusInfo(self):\n        parts = [f\"Pos: ({self.x},{self.y})\"]\n        if self.closeN > 0:\n            closed = sum(1 for o in self.initOpenings if tuple(o) in self.placedPow)\n            parts.append(f\"geschlossen: {closed}/{self.closeN}\")\n        if self.destroyN > 0:\n            parts.append(f\"Aliens: {len(self.destroyedAliens)}/{self.destroyN}\")\n        if self.collectN > 0:\n            parts.append(f\"PowerUps: {self.playerPow}/{self.collectN}\")\n        if self.deliverN > 0:\n            parts.append(f\"geliefert: {self.delivered}/{self.deliverN}\")\n        if self.playerAmmo > 0 or self.initAmmo:\n            parts.append(f\"Ammo: {self.playerAmmo}\")\n        return \" | \".join(parts)\n\n    def state(self, msg=\"\"):\n        return {\n            \"mission\": MISSION_ID,\n            \"tick\": self.tick,\n            \"x\": self.x,\n            \"y\": self.y,\n            \"dir\": self.dir,\n            \"powerups\": sorted([list(p) for p in self.placedPow]),\n            \"field_powerups\": sorted([list(p) for p in self.fieldPow]),\n            \"aliens\": sorted([list(a) for a in self.aliens]),\n            \"field_ammo\": sorted([list(a) for a in self.fieldAmmo]),\n            \"player_powerups\": self.playerPow,\n            \"player_ammo\": self.playerAmmo,\n            \"last_shot\": self.lastShot,\n            \"alien_shots\": self.alienShots,\n            \"last_animation\": self.lastAnimation,\n            \"player_alive\": self.playerAlive,\n            \"solved\": self.isSolved(),\n            \"message\": msg\n        }\n\nengine = Engine()\n\ndef move(): engine.move()\ndef turnLeft(): engine.turnLeft()\ndef turnRight(): engine.turnRight()\ndef putPow(): engine.putPow()\ndef removePow(): engine.removePow()\ndef loadPow(): engine.loadPow()\ndef unloadPow(): engine.unloadPow()\ndef removeAmmo(): engine.removeAmmo()\ndef shoot(): engine.shoot()\ndef wallAhead(): return engine.wallAhead()\ndef freeAhead(): return engine.freeAhead()\ndef isAsteroid(): return engine.isAsteroidAhead()\ndef isOpening(): return engine.isOpeningAhead()\ndef isAlien(): return engine.isAlienAhead()\ndef scanForward(): return engine.scanForward()\n\nALLOWED_CALLS = [\"loadPow\", \"move\", \"putPow\", \"removePow\", \"turnLeft\", \"turnRight\"]\n\ndef _student_line(exc):\n    tb = traceback.extract_tb(exc.__traceback__)\n    for fr in reversed(tb):\n        if fr.filename == '<string>':\n            return fr.lineno\n    return None\n\ndef loadProgram(studentCode: str):\n    engine.reset()\n    collected = []\n    _output = []\n    _sensorEngine = Engine()\n    _sensorEngine.reset()\n    def _move():\n        collected.append(\"move\")\n        _sensorEngine.move()\n    def _turnLeft():\n        collected.append(\"turnLeft\")\n        _sensorEngine.turnLeft()\n    def _turnRight():\n        collected.append(\"turnRight\")\n        _sensorEngine.turnRight()\n    def _putPow():\n        collected.append(\"putPow\")\n        _sensorEngine.putPow()\n    def _removePow():\n        collected.append(\"removePow\")\n        _sensorEngine.removePow()\n    def _loadPow():\n        collected.append(\"loadPow\")\n        _sensorEngine.loadPow()\n    def _unloadPow():\n        collected.append(\"unloadPow\")\n        _sensorEngine.unloadPow()\n    def _removeAmmo():\n        collected.append(\"removeAmmo\")\n        _sensorEngine.removeAmmo()\n    def _shoot():\n        collected.append(\"shoot\")\n        _sensorEngine.shoot()\n    def _wallAhead(): return _sensorEngine.wallAhead()\n    def _freeAhead(): return _sensorEngine.freeAhead()\n    def _isAsteroid(): return _sensorEngine.isAsteroidAhead()\n    def _isOpening(): return _sensorEngine.isOpeningAhead()\n    def _isAlien(): return _sensorEngine.isAlienAhead()\n    def _scanForward(): return _sensorEngine.scanForward()\n    def _print(*args, sep=' ', end='\\n', **kw):\n        _output.append(sep.join(str(a) for a in args))\n    try:\n        exec(studentCode, {\n            '__builtins__': __builtins__,\n            'move': _move, 'turnLeft': _turnLeft,\n            'turnRight': _turnRight, 'putPow': _putPow,\n            'removePow': _removePow, 'loadPow': _loadPow,\n            'unloadPow': _unloadPow, 'removeAmmo': _removeAmmo,\n            'shoot': _shoot, 'print': _print,\n            'wallAhead': _wallAhead, 'freeAhead': _freeAhead,\n            'isAsteroid': _isAsteroid, 'isOpening': _isOpening,\n            'isAlien': _isAlien, 'scanForward': _scanForward,\n        })\n    except SimError: raise\n    except SyntaxError as e: raise SimError(f\"SyntaxError (Zeile {e.lineno}): {e.msg}\")\n    except Exception as e:\n        line = _student_line(e)\n        if line is not None:\n            raise SimError(f\"{type(e).__name__} (Zeile {line}): {e}\")\n        raise SimError(f\"{type(e).__name__}: {e}\")\n    if len(collected) > 2000:\n        raise SimError(\"Zu viele Aktionen (max. 2000).\")\n    engine.actions = collected\n    engine.actionIndex = 0\n    st = engine.state(f\"Programm geladen ({len(collected)} Aktionen).\")\n    st['output'] = '\\n'.join(_output)\n    return json.dumps(st)\n\ndef stepOnce():\n    if not engine.playerAlive:\n        return json.dumps(engine.state(\"\\u274c Dein Schiff wurde getroffen! Mission fehlgeschlagen.\"))\n    if engine.actionIndex >= len(engine.actions):\n        msg = \"Programmende.\"\n        if engine.isSolved():\n            msg += \" \\u2705 Mission erfuellt!\"\n        else:\n            msg += \" \\u274c Noch nicht erfuellt. \" + engine.statusInfo()\n        return json.dumps(engine.state(msg))\n    fn = engine.actions[engine.actionIndex]\n    engine.actionIndex += 1\n    dispatch = {\"move\": move, \"turnLeft\": turnLeft, \"turnRight\": turnRight,\n                \"putPow\": putPow, \"removePow\": removePow, \"loadPow\": loadPow,\n                \"unloadPow\": unloadPow, \"removeAmmo\": removeAmmo, \"shoot\": shoot}\n    dispatch[fn]()\n    engine.lastShot = engine.lastShot if fn == \"shoot\" else None\n    if engine.patrols:\n        engine.stepAliens()\n    msg = f\"Ausgefuehrt: {fn}() | \" + engine.statusInfo()\n    if not engine.playerAlive:\n        msg = \"\\u274c Alienschiff hat dich getroffen! Mission fehlgeschlagen.\"\n    elif engine.isSolved():\n        msg += \" \\u2705 Mission erfuellt!\"\n    return json.dumps(engine.state(msg))\n\ndef runAll(maxSteps=2000):\n    steps = 0\n    last = None\n    while steps < maxSteps:\n        last = json.loads(stepOnce())\n        steps += 1\n        if not last.get(\"player_alive\", True):\n            return json.dumps(last)\n        if \"Programmende\" in last[\"message\"] or \"Mission erfuellt\" in last[\"message\"]:\n            return json.dumps(last)\n    raise SimError(\"Zu viele Schritte (Sicherheitsabbruch).\")\n";
+
+    let pyodide = null;
+    let continueTimer = null;
+    let continueToken = 0;
+    let lastRenderedState = null;
+    let lastRenderedShotTick = null;
+    let programLoaded = false;
+    let lastCodeHash = '';
+
+    function hashCode(s) {
+      let h = 0;
+      for (let i=0;i<s.length;i++) h = ((h<<5)-h) + s.charCodeAt(i) | 0;
+      return String(h);
+    }
+
+    async function initPyodide() {
+      try {
+        elPyStatus.textContent = 'System l\u00e4dt\u2026';
+        pyodide = await loadPyodide();
+        await pyodide.runPythonAsync(enginePy);
+        elPyStatus.textContent = 'Python 3 bereit.';
+      } catch (err) {
+        elPyStatus.textContent = 'Fehler.';
+        setConsole('Pyodide konnte nicht geladen werden:\n' + String(err));
+        throw err;
+      }
+    }
+
+    async function ensureProgramLoaded(force) {
+      if (!pyodide) return;
+      const code = elCode.value;
+      const h = hashCode(code);
+      if (force || !programLoaded || (lastCodeHash && h !== lastCodeHash)) {
+        const stJson = pyodide.globals.get('loadProgram')(code);
+        const st = JSON.parse(stJson);
+        programLoaded = true;
+        lastCodeHash = h;
+        await renderState(st);
+        const _out = st.output || '';
+        setConsole(_out ? _out + '\n\u2500\u2500 Programm geladen \u2500\u2500' : 'Programm geladen.');
+      }
+    }
+
+    async function step(opts) {
+      if (!pyodide) return;
+      const stJson = pyodide.globals.get('stepOnce')();
+      const st = JSON.parse(stJson);
+      await renderState(st, opts);
+      return st;
+    }
+
+    async function runAll() {
+      if (!pyodide) return;
+      const stJson = pyodide.globals.get('runAll')(2000);
+      const st = JSON.parse(stJson);
+      await renderState(st);
+      setConsole("Run beendet.\n" + (st.message || ''));
+      stopContinue();
+    }
+
+    function stopContinue() {
+      continueToken += 1;
+      if (continueTimer) clearTimeout(continueTimer);
+      continueTimer = null;
+    }
+
+    btnReset.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      stopContinue();
+      drawStartWorld();
+      setConsole('(leer)');
+      programLoaded = false;
+      lastCodeHash = '';
+      lastRenderedShotTick = null;
+      try { pyodide && pyodide.runPython('engine.reset()'); } catch (_) {}
+    });
+
+    btnRun.addEventListener('click', async function(e) {
+      e.preventDefault(); e.stopPropagation();
+      stopContinue();
+      try { await ensureProgramLoaded(true); await runAll(); }
+      catch (err) { setConsole(String(err)); if (/Kollision|collision/i.test(String(err))) triggerPlayerExplosion(); }
+    });
+
+    btnStep.addEventListener('click', async function(e) {
+      e.preventDefault(); e.stopPropagation();
+      stopContinue();
+      try { await ensureProgramLoaded(false); await step(); }
+      catch (err) { setConsole(String(err)); if (/Kollision|collision/i.test(String(err))) triggerPlayerExplosion(); }
+    });
+
+    btnContinue.addEventListener('click', async function(e) {
+      e.preventDefault(); e.stopPropagation();
+      stopContinue();
+      try {
+        await ensureProgramLoaded(false);
+        const delay = parseInt(speedSel.value, 10) || 400;
+        const token = ++continueToken;
+        const loop = async function() {
+          if (token !== continueToken) return;
+          try {
+            const st = await step({ animateMs: lowMotionEnabled ? 0 : Math.max(80, delay - 40) });
+            if (!st || /Programmende|Mission erfuellt|FEHLER|Interner Fehler/.test(String(st.message || ''))) {
+              stopContinue();
+              return;
+            }
+            continueTimer = setTimeout(loop, 0);
+          } catch (err) {
+            setConsole(String(err));
+            if (/Kollision|collision/i.test(String(err))) triggerPlayerExplosion();
+            stopContinue();
+          }
+        };
+        loop();
+      } catch (err) {
+        setConsole(String(err));
+      }
+    });
+
+    btnStop.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      stopContinue();
+      elSimStatus.textContent = 'Stop.';
+    });
+    btnMotion && btnMotion.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      setLowMotion(!lowMotionEnabled);
+    });
+    btnCodeFocus && btnCodeFocus.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      toggleCodeFocus();
+    });
+
+    setLowMotion((function() {
+      try { return localStorage.getItem(MOTION_STORAGE_KEY) === 'off'; } catch (_) { return false; }
+    })());
+    drawStartWorld();
+    playBriefingTransmission();
+    elCode.value = loadSavedCode() || "";
+    lockReward();
+    updateLineNumbers();
+    elCode.addEventListener('input', function() { updateLineNumbers(); scheduleCodeSave(); });
+    elCode.addEventListener('scroll', function() { codeGutter.scrollTop = elCode.scrollTop; });
+    mobileKeybar && mobileKeybar.addEventListener('click', function(e) {
+      const btn = e.target && e.target.closest('button[data-ins]');
+      if (!btn) return;
+      insertAtCursor(btn.getAttribute('data-ins') || '');
+    });
+    elCode.addEventListener('keydown', function(e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const s = elCode.selectionStart, en = elCode.selectionEnd;
+        if (e.shiftKey) {
+          const v = elCode.value;
+          const lineStart = getLineStart(v, s);
+          if (v.substring(lineStart, lineStart + 4) === '    ') {
+            elCode.value = v.substring(0, lineStart) + v.substring(lineStart + 4);
+            const nextS = s >= lineStart + 4 ? s - 4 : lineStart;
+            const nextE = en >= lineStart + 4 ? en - 4 : lineStart;
+            elCode.selectionStart = nextS;
+            elCode.selectionEnd = nextE;
+          }
+        } else {
+          elCode.value = elCode.value.substring(0, s) + '    ' + elCode.value.substring(en);
+          elCode.selectionStart = elCode.selectionEnd = s + 4;
+        }
+        updateLineNumbers();
+        scheduleCodeSave();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const s = elCode.selectionStart, en = elCode.selectionEnd;
+        const v = elCode.value;
+        const lineStart = getLineStart(v, s);
+        const line = v.substring(lineStart, s);
+        const indent = (line.match(/^\s*/) || [''])[0];
+        const extra = line.trim().endsWith(':') ? '    ' : '';
+        const insert = '\n' + indent + extra;
+        elCode.value = v.substring(0, s) + insert + v.substring(en);
+        const next = s + insert.length;
+        elCode.selectionStart = elCode.selectionEnd = next;
+        updateLineNumbers();
+        scheduleCodeSave();
+      }
+    });
+    initPyodide();
+  })();
+  </script>
+</div>
