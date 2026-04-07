@@ -2,7 +2,7 @@
 
 Dieses Verzeichnis enthält alle statischen Assets für das Vireon-Missions-System, die in der Moodle-Umgebung über GitHub Raw-URLs bereitgestellt werden.
 
-## Struktur
+## Struktur: 
 
 ```
 vireon_assets/
